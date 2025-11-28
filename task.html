@@ -1,0 +1,296 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Task Detail
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+  <style>
+   body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+ </head>
+ <body class="bg-[#e1e8f0] p-4 min-h-screen flex items-center justify-center">
+  <div class="max-w-5xl w-full bg-white rounded-lg shadow-md flex flex-col md:flex-row overflow-hidden" style="height: 600px">
+   <!-- Left main content -->
+   <div class="flex-1 p-6 flex flex-col">
+    <!-- Top bar -->
+    <div class="flex items-center justify-between mb-4">
+     <button class="flex items-center gap-2 border border-[#2a8dd4] text-[#2a8dd4] rounded-md px-3 py-1.5 text-sm font-semibold hover:bg-[#eaf6ff] transition" type="button">
+      <i class="fas fa-check">
+      </i>
+      Complete Task
+     </button>
+     <div class="flex items-center gap-3 text-gray-600 text-sm font-medium select-none">
+      <div class="w-7 h-7 rounded-full bg-[#5a6ac9] flex items-center justify-center text-white font-semibold">
+       M
+      </div>
+      <div class="flex items-center gap-1">
+       <span class="text-gray-400 text-xs">
+        Assigned to
+       </span>
+       <span class="uppercase font-semibold text-gray-700 leading-none">
+        MOHAMMED ATHAR HUSAIN
+       </span>
+       <i class="fas fa-caret-down text-gray-400 text-xs">
+       </i>
+      </div>
+     </div>
+     <div class="flex items-center gap-4 text-gray-400 text-lg cursor-pointer">
+      <i class="fas fa-thumbtack">
+      </i>
+      <i class="fas fa-ellipsis-h">
+      </i>
+      <button aria-label="Close" class="text-gray-400 hover:text-gray-600 transition" type="button">
+       <i class="fas fa-times">
+       </i>
+      </button>
+     </div>
+    </div>
+    <!-- Task title and description -->
+    <div class="mb-6">
+     <h2 class="text-lg font-semibold text-gray-800 mb-1">
+      Test
+     </h2>
+     <p class="text-xs text-gray-400">
+      Click to add a description
+     </p>
+    </div>
+    <!-- Checklist -->
+    <div class="mb-6">
+     <button class="flex items-center gap-2 text-gray-700 font-semibold text-sm mb-2" type="button">
+      <i class="fas fa-caret-down text-xs">
+      </i>
+      Checklist
+      <span class="ml-auto text-xs text-gray-400 border border-gray-300 rounded-full px-2 py-0.5">
+       0/0
+      </span>
+     </button>
+     <ul class="flex flex-col gap-3 pl-4">
+      <li>
+       <button class="flex items-center gap-2 text-[#2a8dd4] text-sm font-semibold" type="button">
+        <i class="fas fa-plus">
+        </i>
+        Add checklist item
+       </button>
+      </li>
+      <li class="flex items-center gap-2">
+       <button class="flex items-center gap-2 text-[#2a8dd4] text-sm font-semibold" type="button">
+        <i class="fas fa-plus">
+        </i>
+        Add subtask
+       </button>
+       <span class="ml-2 bg-gray-800 text-white text-[9px] font-semibold rounded px-2 py-[2px]">
+        BUSINESS
+       </span>
+      </li>
+      <li>
+       <button class="flex items-center gap-2 text-[#2a8dd4] text-sm font-semibold" type="button">
+        <i class="fas fa-plus">
+        </i>
+        Add attachment
+       </button>
+      </li>
+     </ul>
+    </div>
+    <!-- Activity -->
+    <div class="flex flex-col gap-3 flex-1">
+     <button class="flex items-center gap-2 text-gray-700 font-semibold text-sm mb-2" type="button">
+      <i class="fas fa-caret-down text-xs">
+      </i>
+      Activity
+     </button>
+     <textarea class="resize-none border border-gray-300 rounded-md p-2 text-xs text-gray-400 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#2a8dd4]" placeholder="Click to add a comment" rows="3"></textarea>
+     <div class="flex items-center gap-2">
+      <button aria-label="Add emoji" class="text-2xl text-gray-400 hover:text-gray-600 transition" type="button">
+       <i class="far fa-smile">
+       </i>
+      </button>
+      <button aria-label="Send comment" class="ml-auto bg-[#2a8dd4] text-white rounded-full p-2 disabled:opacity-50" disabled="" type="button">
+       <i class="fas fa-arrow-right">
+       </i>
+      </button>
+     </div>
+     <!-- Activity log entries -->
+     <div class="flex flex-col gap-4 mt-2 overflow-y-auto">
+      <div class="flex gap-3 items-start">
+       <div class="flex-shrink-0 w-7 h-7 rounded-full bg-[#2a8dd4] flex items-center justify-center text-white">
+        <i class="fas fa-arrow-right">
+        </i>
+       </div>
+       <div class="flex flex-col text-xs text-gray-600">
+        <span class="uppercase font-semibold text-gray-400 mb-0.5">
+         AN HOUR AGO
+        </span>
+        <span class="font-semibold leading-tight">
+         MOHAMMED ATHAR HUSAIN → MOHAMMED ATHAR HUSAIN
+        </span>
+       </div>
+      </div>
+      <div class="flex gap-3 items-start">
+       <div class="flex-shrink-0 w-7 h-7 rounded-full bg-[#2a8dd4] flex items-center justify-center text-white">
+        <i class="fas fa-arrow-right">
+        </i>
+       </div>
+       <div class="flex flex-col text-xs text-gray-600">
+        <span class="uppercase font-semibold text-gray-400 mb-0.5">
+         AN HOUR AGO
+        </span>
+        <span class="font-semibold leading-tight">
+         MOHAMMED ATHAR HUSAIN → Mostwanted
+        </span>
+       </div>
+      </div>
+      <div class="flex gap-3 items-start">
+       <div class="flex-shrink-0 w-7 h-7 rounded-full bg-[#2a8dd4] flex items-center justify-center text-white">
+        <i class="fas fa-plus">
+        </i>
+       </div>
+       <div class="flex flex-col text-xs text-gray-600">
+        <span class="uppercase font-semibold text-gray-400 mb-0.5">
+         AN HOUR AGO
+        </span>
+        <span class="font-semibold leading-tight">
+         MOHAMMED ATHAR HUSAIN created the task
+        </span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <!-- Right sidebar -->
+   <div class="w-72 bg-[#f7f8fa] border-l border-gray-200 flex flex-col divide-y divide-gray-200 text-gray-600 text-xs">
+    <!-- Timer -->
+    <button class="flex items-center justify-between px-4 py-3 border-b border-gray-200 hover:bg-gray-100 cursor-pointer" type="button">
+     <div class="flex items-center gap-2">
+      <i class="fas fa-play-circle text-gray-400 text-lg">
+      </i>
+      <span>
+       00:00:00
+      </span>
+     </div>
+     <i class="fas fa-caret-down text-gray-400">
+     </i>
+    </button>
+    <!-- Due date -->
+    <button class="flex items-center justify-between px-4 py-3 border-b border-gray-200 hover:bg-gray-100 cursor-pointer" type="button">
+     <div class="flex items-center gap-2">
+      <i class="far fa-calendar-alt text-gray-400 text-lg">
+      </i>
+      <span>
+       Due date
+      </span>
+     </div>
+     <i class="fas fa-caret-down text-gray-400">
+     </i>
+    </button>
+    <!-- Scheduling -->
+    <button class="flex flex-col px-4 py-3 border-b border-gray-200 hover:bg-gray-100 cursor-pointer" type="button">
+     <div class="flex items-center gap-2 mb-1">
+      <i class="fas fa-sliders-h text-gray-400 text-lg">
+      </i>
+      <span>
+       Not scheduled
+      </span>
+     </div>
+     <div class="ml-8">
+      <span class="bg-gray-800 text-white text-[9px] font-semibold rounded px-2 py-[2px]">
+       BUSINESS
+      </span>
+     </div>
+    </button>
+    <!-- Tags -->
+    <button class="flex items-center justify-between px-4 py-3 border-b border-gray-200 hover:bg-gray-100 cursor-pointer" type="button">
+     <div class="flex items-center gap-2">
+      <i class="fas fa-tags text-gray-400 text-lg">
+      </i>
+      <span>
+       Tags
+      </span>
+     </div>
+     <i class="fas fa-caret-down text-gray-400">
+     </i>
+    </button>
+    <!-- Watching -->
+    <button class="flex flex-col px-4 py-3 border-b border-gray-200 hover:bg-gray-100 cursor-pointer" type="button">
+     <div class="flex items-center gap-2 mb-1">
+      <i class="fas fa-eye text-gray-400 text-lg">
+      </i>
+      <span>
+       Watching
+      </span>
+     </div>
+     <div class="ml-8">
+      <img alt="User avatar of a person with dark hair and a dark jacket" class="rounded-full w-6 h-6" height="24" src="https://storage.googleapis.com/a1aa/image/d3071251-afac-4396-941b-37d840095dc7.jpg" width="24"/>
+     </div>
+    </button>
+    <!-- Relations -->
+    <button class="flex items-center justify-between px-4 py-3 border-b border-gray-200 hover:bg-gray-100 cursor-pointer" type="button">
+     <div class="flex items-center gap-2">
+      <i class="fas fa-link text-gray-400 text-lg">
+      </i>
+      <span>
+       Relations
+      </span>
+     </div>
+     <i class="fas fa-caret-down text-gray-400">
+     </i>
+    </button>
+    <!-- Complaints New Tasks info -->
+    <div class="px-4 py-3 text-[9px] text-gray-400 leading-tight">
+     <div class="mb-1 font-semibold text-gray-600">
+      Complaints
+     </div>
+     <div class="mb-3 font-semibold text-gray-600">
+      New Tasks
+     </div>
+     <div class="flex items-start gap-2 mb-2">
+      <i class="fas fa-plus-circle mt-[2px]">
+      </i>
+      <div>
+       <div class="font-semibold text-gray-700">
+        Created
+       </div>
+       <div>
+        May 28, 2025
+        <br/>
+        12:03 PM
+       </div>
+      </div>
+     </div>
+     <div class="flex items-start gap-2 mb-2">
+      <i class="fas fa-pencil-alt mt-[2px]">
+      </i>
+      <div>
+       <div class="font-semibold text-gray-700">
+        Updated
+       </div>
+       <div>
+        May 28, 2025
+        <br/>
+        12:05 PM
+       </div>
+      </div>
+     </div>
+     <div class="flex items-start gap-2">
+      <i class="fas fa-pencil-alt mt-[2px]">
+      </i>
+      <div>
+       <div class="font-semibold text-gray-700">
+        Task ID
+       </div>
+       <div>
+        uTRUakfI
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </body>
+</html>

@@ -1,0 +1,496 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Complaints Board
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+  <style>
+   body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+ </head>
+ <body class="bg-white text-gray-900">
+  <div class="flex min-h-screen">
+   <!-- Left Sidebar -->
+   <aside class="flex flex-col items-center bg-[#0B1F3F] w-16 py-6 space-y-8">
+    <img alt="Blue square with white letter M logo" class="w-8 h-8" height="32" src="https://storage.googleapis.com/a1aa/image/81e4f951-76d5-45da-7884-cfa9d2562379.jpg" width="32"/>
+    <button aria-label="Menu" class="text-white text-xl">
+     <i class="fas fa-bars">
+     </i>
+    </button>
+    <nav class="flex flex-col space-y-8 text-gray-300 text-sm">
+     <button class="flex flex-col items-center space-y-1 hover:text-white">
+      <i class="fas fa-home text-lg">
+      </i>
+      <span class="text-xs">
+       Home
+      </span>
+     </button>
+     <button class="flex flex-col items-center space-y-1 hover:text-white">
+      <i class="fas fa-search text-lg">
+      </i>
+      <span class="text-xs">
+       Search
+      </span>
+     </button>
+     <button aria-current="page" class="flex flex-col items-center space-y-1 text-white cursor-default">
+      <i class="fas fa-project-diagram text-lg">
+      </i>
+      <span class="text-xs font-semibold">
+       Projects
+      </span>
+     </button>
+     <button class="flex flex-col items-center space-y-1 hover:text-white">
+      <i class="fas fa-tasks text-lg">
+      </i>
+      <span class="text-xs">
+       Tasks
+      </span>
+     </button>
+     <button class="flex flex-col items-center space-y-1 hover:text-white">
+      <i class="fas fa-chart-bar text-lg">
+      </i>
+      <span class="text-xs">
+       Reports
+      </span>
+     </button>
+     <button class="flex flex-col items-center space-y-1 hover:text-white">
+      <i class="fas fa-sticky-note text-lg">
+      </i>
+      <span class="text-xs">
+       Notes
+      </span>
+     </button>
+     <button class="flex flex-col items-center space-y-1 hover:text-white">
+      <i class="fas fa-project-diagram text-lg">
+      </i>
+      <span class="text-xs">
+       Mind Maps
+      </span>
+     </button>
+    </nav>
+   </aside>
+   <!-- Main Content -->
+   <main class="flex-1 flex flex-col">
+    <!-- Top Navigation -->
+    <header class="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+     <div class="flex items-center space-x-3">
+      <button aria-label="Menu" class="text-gray-600 text-xl">
+       <i class="fas fa-bars">
+       </i>
+      </button>
+      <button aria-expanded="false" aria-haspopup="true" class="flex items-center space-x-1 text-gray-700 font-semibold text-sm">
+       <i class="fas fa-bell-slash text-gray-400">
+       </i>
+       <span>
+        Complaints
+       </span>
+       <i class="fas fa-chevron-down text-xs">
+       </i>
+      </button>
+     </div>
+     <div class="flex items-center space-x-6 text-gray-500 text-sm">
+      <button class="flex items-center space-x-1 hover:text-gray-700">
+       <span>
+        Board
+       </span>
+       <i class="fas fa-chevron-down text-xs">
+       </i>
+      </button>
+      <button aria-label="Users" class="hover:text-gray-700">
+       <i class="fas fa-users">
+       </i>
+      </button>
+      <button aria-label="Timer" class="hover:text-gray-700">
+       <i class="fas fa-stopwatch">
+       </i>
+      </button>
+      <button aria-label="Check" class="hover:text-gray-700">
+       <i class="fas fa-check">
+       </i>
+      </button>
+      <button aria-label="Notifications" class="relative hover:text-gray-700">
+       <i class="fas fa-bell">
+       </i>
+       <span class="absolute -top-1 -right-2 bg-red-600 text-white text-[10px] font-semibold rounded-full px-[5px] leading-none">
+        99+
+       </span>
+      </button>
+      <button aria-label="Help" class="hover:text-gray-700">
+       <i class="fas fa-question-circle">
+       </i>
+      </button>
+      <div aria-label="User initial M" class="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold text-sm">
+       M
+      </div>
+     </div>
+    </header>
+    <!-- Board Content -->
+    <div class="flex flex-1 overflow-x-auto space-x-4 p-4 bg-gradient-to-r from-[#2B6CB0] to-[#667EEA]">
+     <!-- New Tasks Column -->
+     <section class="flex-shrink-0 w-72 flex flex-col bg-[#2B6CB0]">
+      <header class="flex items-center justify-between bg-[#E53E3E] text-white text-sm font-semibold px-4 py-2">
+       <span>
+        ⚠️ New Tasks
+       </span>
+       <span class="bg-[#C53030] rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold">
+        4
+       </span>
+      </header>
+      <div class="flex flex-col gap-4 p-4">
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex justify-between items-center">
+        <span>
+         ss.basararaj check payment
+        </span>
+        <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex justify-between items-center">
+        <span>
+         Test
+        </span>
+        <div class="w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold text-xs">
+         M
+        </div>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span class="line-through text-gray-400">
+          ka.p.jeelan jp Apartment hole ready remove fiber rescing
+         </span>
+         <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-gray-500">
+         <i class="far fa-comment">
+         </i>
+         <span>
+          3
+         </span>
+         <span class="bg-red-600 text-white text-xs font-semibold rounded px-2 py-0.5">
+          Splicing
+         </span>
+        </div>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex justify-between items-center">
+        <span>
+         rbl bank payment Pending
+        </span>
+        <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+       </div>
+       <button class="mt-2 self-center bg-white text-[#2B6CB0] text-xs font-semibold rounded-full px-4 py-1 flex items-center space-x-1 hover:bg-gray-100">
+        <i class="fas fa-plus text-xs">
+        </i>
+        <span>
+         Add task
+        </span>
+       </button>
+      </div>
+     </section>
+     <!-- Mansoor Cb Column -->
+     <section class="flex-shrink-0 w-72 flex flex-col bg-gradient-to-b from-[#38B2AC] to-[#319795]">
+      <header class="flex items-center justify-between text-white text-sm font-semibold px-4 py-2">
+       <span>
+        <i class="fab fa-apple mr-1">
+        </i>
+        Mansoor Cb
+       </span>
+       <span class="bg-[#319795] rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold">
+        5
+       </span>
+      </header>
+      <div class="flex flex-col gap-4 p-4">
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2 border border-green-200">
+        <div class="flex items-center space-x-2 text-green-600 text-xs font-semibold">
+         <i class="fas fa-check-circle">
+         </i>
+         <span>
+          Completed
+         </span>
+         <button aria-label="Add" class="ml-auto bg-white text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+          +
+         </button>
+        </div>
+        <div class="line-through text-gray-400 text-xs">
+         Louts colony WiFi range issue
+        </div>
+        <img alt="Screenshot showing WiFi range issue in Louts colony" class="rounded-md border border-gray-200" height="120" src="https://storage.googleapis.com/a1aa/image/76603729-0c5b-4549-e349-f745e8101e0b.jpg" width="200"/>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2 border border-green-200">
+        <div class="flex items-center space-x-2 text-green-600 text-xs font-semibold">
+         <i class="fas fa-check-circle">
+         </i>
+         <span>
+          Completed
+         </span>
+         <button aria-label="Add" class="ml-auto bg-white text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+          +
+         </button>
+        </div>
+        <div class="line-through text-gray-400 text-xs">
+         Irfan Gautam nagar
+        </div>
+        <img alt="Screenshot showing Irfan Gautam nagar details" class="rounded-md border border-gray-200" height="120" src="https://storage.googleapis.com/a1aa/image/c41c94b6-ebf5-4eb8-9aa0-fa75d9ac0196.jpg" width="200"/>
+        <div class="flex items-center space-x-2 text-gray-500 text-xs">
+         <i class="far fa-comment">
+         </i>
+         <span>
+          2
+         </span>
+         <i class="fas fa-user">
+         </i>
+         <span>
+          1
+         </span>
+         <span class="bg-red-600 text-white text-xs font-semibold rounded px-2 py-0.5">
+          No internet
+         </span>
+        </div>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2 border border-green-200">
+        <div class="flex items-center space-x-2 text-green-600 text-xs font-semibold">
+         <i class="fas fa-check-circle">
+         </i>
+         <span>
+          Completed
+         </span>
+         <button aria-label="Add" class="ml-auto bg-white text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+          +
+         </button>
+        </div>
+       </div>
+      </div>
+     </section>
+     <!-- Naveed city Column -->
+     <section class="flex-shrink-0 w-72 flex flex-col bg-gradient-to-b from-[#1A202C] to-[#2D3748]">
+      <header class="flex items-center justify-between text-white text-sm font-semibold px-4 py-2">
+       <span>
+        <i class="far fa-heart mr-1">
+        </i>
+        Naveed city
+       </span>
+       <span class="bg-[#2D3748] rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold border border-gray-600">
+        5
+       </span>
+      </header>
+      <div class="flex flex-col gap-4 p-4">
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span>
+          ka phool chand 3500rs
+         </span>
+         <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-gray-500">
+         <i class="far fa-comment">
+         </i>
+         <span>
+          7
+         </span>
+         <button class="bg-gray-300 text-gray-700 text-xs rounded px-2 py-0.5 truncate max-w-[90px]">
+          Collect Amo...
+         </button>
+        </div>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span>
+          ka.sharana basaya tallur road I am give to railway ONT
+         </span>
+         <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+        </div>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span>
+          Dr pavan OPP to old Busstand
+         </span>
+         <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-green-600 font-semibold">
+         <i class="far fa-comment">
+         </i>
+         <span>
+          3
+         </span>
+         <span class="bg-green-400 text-green-900 text-xs font-semibold rounded px-2 py-0.5 truncate max-w-[90px]">
+          Check Dista...
+         </span>
+        </div>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2 border border-green-200">
+        <div class="flex items-center space-x-2 text-green-600 text-xs font-semibold">
+         <i class="fas fa-check-circle">
+         </i>
+         <span>
+          Completed
+         </span>
+        </div>
+        <div class="line-through text-gray-400 text-xs">
+         Prem steel
+        </div>
+        <span class="bg-red-600 text-white text-xs font-semibold rounded px-2 py-0.5">
+         No internet
+        </span>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span>
+          khabeer flowers street
+         </span>
+         <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-green-600 font-semibold">
+         <i class="far fa-comment">
+         </i>
+         <span>
+          1
+         </span>
+         <span class="bg-green-400 text-green-900 text-xs font-semibold rounded px-2 py-0.5 truncate max-w-[90px]">
+          Splicing &amp; ac...
+         </span>
+        </div>
+       </div>
+      </div>
+     </section>
+     <!-- Veeresh Column -->
+     <section class="flex-shrink-0 w-72 flex flex-col bg-gradient-to-b from-[#38B2AC] to-[#319795]">
+      <header class="flex items-center justify-between text-white text-sm font-semibold px-4 py-2">
+       <span>
+        <i class="fas fa-running mr-1">
+        </i>
+        Veeresh
+       </span>
+       <span class="bg-[#319795] rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold">
+        1
+       </span>
+      </header>
+      <div class="flex flex-col gap-4 p-4">
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span>
+          mansoor jagruthi nagar 250 mrt fiber confirm
+         </span>
+         <div class="w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center font-semibold text-xs">
+          VN
+         </div>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-green-600 font-semibold">
+         <i class="far fa-comment">
+         </i>
+         <span>
+          1
+         </span>
+         <span class="bg-green-400 text-green-900 text-xs font-semibold rounded px-2 py-0.5 truncate max-w-[90px]">
+          Fiber
+         </span>
+        </div>
+       </div>
+       <button class="mt-2 self-center bg-white text-[#319795] text-xs font-semibold rounded-full px-4 py-1 flex items-center space-x-1 hover:bg-gray-100">
+        <i class="fas fa-plus text-xs">
+        </i>
+        <span>
+         Add task
+        </span>
+       </button>
+      </div>
+     </section>
+     <!-- Md Muzam... Column -->
+     <section class="flex-shrink-0 w-72 flex flex-col bg-gradient-to-b from-[#9F7AEA] to-[#805AD5]">
+      <header class="flex items-center justify-between text-white text-sm font-semibold px-4 py-2">
+       <span>
+        <i class="fab fa-apple mr-1">
+        </i>
+        Md Muzam...
+       </span>
+       <span class="bg-[#805AD5] rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold">
+        6
+       </span>
+      </header>
+      <div class="flex flex-col gap-4 p-4">
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span>
+          vivek agadimarrppa copund 120 m confirm connection
+         </span>
+         <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-green-600 font-semibold">
+         <span class="bg-green-400 text-green-900 text-xs font-semibold rounded px-2 py-0.5 truncate max-w-[90px]">
+          Splicing &amp; ac...
+         </span>
+        </div>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span>
+          Shahrukh belagal cross 150 mrt fiber confirm 3 month plan 300 Mbps Take go Nokia ont
+         </span>
+         <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-green-600 font-semibold">
+         <span class="bg-green-400 text-green-900 text-xs font-semibold rounded px-2 py-0.5 truncate max-w-[90px]">
+          Splicing &amp; ac...
+         </span>
+        </div>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span>
+          Sravani Netaji Nagar 140 mrt fiber confirm 6 month plan 50 Mbps
+         </span>
+         <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-green-600 font-semibold">
+         <span class="bg-green-400 text-green-900 text-xs font-semibold rounded px-2 py-0.5 truncate max-w-[90px]">
+          Splicing &amp; ac...
+         </span>
+        </div>
+       </div>
+       <div class="bg-white rounded-md p-3 text-sm text-gray-900 shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+         <span>
+          Dr Shabbir Rahimbad colony 60 mrt fiber confirm Take charge. :
+         </span>
+         <img alt="User avatar small round grayscale" class="w-6 h-6 rounded-full" height="24" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="24"/>
+        </div>
+       </div>
+      </div>
+     </section>
+    </div>
+   </main>
+   <!-- Right Sidebar -->
+   <aside class="flex flex-col items-center bg-[#1E293B] w-16 py-4 space-y-6 text-gray-300 text-xs">
+    <button aria-label="Menu" class="text-gray-400 hover:text-white">
+     <i class="fas fa-ellipsis-v">
+     </i>
+    </button>
+    <button aria-label="Filter" class="text-gray-400 hover:text-white">
+     <i class="fas fa-filter">
+     </i>
+    </button>
+    <div class="flex flex-col items-center space-y-6">
+     <div class="text-center">
+      <div class="text-gray-400 text-[10px]">
+       Unassigned
+      </div>
+      <div class="text-white font-semibold text-sm">
+       322
+      </div>
+     </div>
+     <div class="w-8 h-8 rounded-full bg-indigo-700 text-white flex items-center justify-center font-semibold text-sm">
+      M
+     </div>
+     <img alt="User avatar small round grayscale" class="w-8 h-8 rounded-full" height="32" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="32"/>
+     <img alt="User avatar small round grayscale" class="w-8 h-8 rounded-full" height="32" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="32"/>
+     <img alt="User avatar small round grayscale" class="w-8 h-8 rounded-full" height="32" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="32"/>
+     <img alt="User avatar small round grayscale" class="w-8 h-8 rounded-full" height="32" src="https://storage.googleapis.com/a1aa/image/5c92de7e-5f47-44cf-bc16-737be6fcd087.jpg" width="32"/>
+    </div>
+   </aside>
+  </div>
+ </body>
+</html>

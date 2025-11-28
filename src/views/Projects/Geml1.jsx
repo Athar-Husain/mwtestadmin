@@ -1,0 +1,804 @@
+import React, { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Avatar
+} from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { green, blue, grey, purple } from '@mui/material/colors';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+
+// Date Picker Imports
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'; // Using DatePicker for single date selection for simplicity
+import dayjs from 'dayjs'; // Import dayjs for date manipulation
+
+// --- Dummy Data Embedded Directly ---
+export const users = [
+  { id: 'user-1', name: 'Alice Johnson', email: 'alice@example.com' },
+  { id: 'user-2', name: 'Bob Williams', email: 'bob@example.com' },
+  { id: 'user-3', name: 'Charlie Brown', email: 'charlie@example.com' },
+  { id: 'user-4', name: 'Diana Prince', email: 'diana@example.com' },
+];
+
+export const projects = [
+  { id: 'project-1', name: 'Website Redesign', description: 'Revamp the company website with a modern look and feel.' },
+  { id: 'project-2', name: 'Mobile App Development', description: 'Build a new mobile application for iOS and Android.' },
+  { id: 'project-3', name: 'Marketing Campaign', description: 'Plan and execute a new digital marketing campaign.' },
+];
+
+export const initialTasks = [
+  {
+    id: 'task-101',
+    projectId: 'project-1',
+    title: 'Design Homepage Mockup',
+    description: 'Create initial design mockups for the website homepage.',
+    status: 'todo',
+    assignedTo: 'user-1',
+    dueDate: '2025-07-10',
+  },
+  {
+    id: 'task-102',
+    projectId: 'project-1',
+    title: 'Develop Header Component',
+    description: 'Implement the responsive header component using React.',
+    status: 'in-progress',
+    assignedTo: 'user-2',
+    dueDate: '2025-07-15',
+  },
+  {
+    id: 'task-103',
+    projectId: 'project-1',
+    title: 'Write About Us Content',
+    description: 'Draft compelling content for the About Us page.',
+    status: 'completed',
+    assignedTo: 'user-3',
+    dueDate: '2025-07-01',
+  },
+  {
+    id: 'task-104',
+    projectId: 'project-1',
+    title: 'Setup Database Schema',
+    description: 'Define and implement the database schema for user data.',
+    status: 'in-progress',
+    assignedTo: 'user-1',
+    dueDate: '2025-07-20',
+  },
+  {
+    id: 'task-105',
+    projectId: 'project-1',
+    title: 'Deploy Staging Environment',
+    description: 'Set up the AWS EC2 instance for staging deployment.',
+    status: 'todo',
+    assignedTo: 'user-4',
+    dueDate: '2025-07-25',
+  },
+  {
+    id: 'task-201',
+    projectId: 'project-2',
+    title: 'Define User Stories',
+    description: 'Gather requirements and define key user stories for the app.',
+    status: 'completed',
+    assignedTo: 'user-1',
+    dueDate: '2025-06-28',
+  },
+  {
+    id: 'task-202',
+    projectId: 'project-2',
+    title: 'Design Login Screen',
+    description: 'Create UI/UX designs for the mobile app login and signup.',
+    status: 'in-progress',
+    assignedTo: 'user-3',
+    dueDate: '2025-07-18',
+  },
+  {
+    id: 'task-203',
+    projectId: 'project-2',
+    title: 'Implement Authentication',
+    description: 'Develop backend authentication using Firebase Auth.',
+    status: 'todo',
+    assignedTo: 'user-2',
+    dueDate: '2025-07-22',
+  },
+  {
+    id: 'task-301',
+    projectId: 'project-3',
+    title: 'Market Research',
+    description: 'Conduct research on target audience and competitor strategies.',
+    status: 'in-progress',
+    assignedTo: 'user-4',
+    dueDate: '2025-07-12',
+  },
+  {
+    id: 'task-302',
+    projectId: 'project-3',
+    title: 'Create Ad Copy',
+    description: 'Write engaging ad copy for social media and search ads.',
+    status: 'todo',
+    assignedTo: 'user-3',
+    dueDate: '2025-07-19',
+  },
+];
+// --- End of Dummy Data ---
+
+// Custom Material-UI theme for consistent styling
+const theme = createTheme({
+  typography: {
+    fontFamily: 'Inter, sans-serif',
+  },
+  palette: {
+    primary: {
+      main: blue[600],
+    },
+    secondary: {
+      main: green[500],
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 8,
+          },
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        select: {
+          borderRadius: 8,
+        },
+      },
+    },
+  },
+});
+
+// Helper function to get user name by ID
+const getUserName = (userId) => {
+  const user = users.find(u => u.id === userId);
+  return user ? user.name : 'Unassigned';
+};
+
+// Helper function to get project name by ID
+const getProjectName = (projectId) => {
+  const project = projects.find(p => p.id === projectId);
+  return project ? project.name : 'Unknown Project';
+};
+
+// Task Card Component
+const TaskCard = ({ task, index, isBlurred = false }) => {
+  const statusColors = {
+    'todo': 'bg-gray-200 text-gray-800',
+    'in-progress': 'bg-blue-200 text-blue-800',
+    'completed': 'bg-green-200 text-green-800',
+  };
+
+  return (
+    <Draggable draggableId={task.id} index={index}>
+      {(provided, snapshot) => (
+        <Card
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className={`mt-4 mb-4 shadow-md transition-all duration-300 ${snapshot.isDragging ? 'bg-blue-50' : ''} ${isBlurred ? 'filter blur-sm opacity-50' : 'hover:shadow-lg'}`}
+          style={{
+            ...provided.draggableProps.style,
+            // Ensure the blur doesn't interfere with drag visuals too much
+            filter: isBlurred ? 'blur(2px)' : 'none',
+            opacity: isBlurred ? 0.6 : 1,
+          }}
+        >
+          <CardContent>
+            <Typography variant="h6" component="div" className="font-semibold mb-1">
+              {task.title}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" className="mb-2">
+              {task.description}
+            </Typography>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <Chip
+                label={task.status.replace('-', ' ').toUpperCase()}
+                size="small"
+                className={`capitalize ${statusColors[task.status]}`}
+              />
+              <Chip
+                label={`Assigned to: ${getUserName(task.assignedTo)}`}
+                size="small"
+                variant="outlined"
+                color="primary"
+              />
+              <Chip
+                label={`Project: ${getProjectName(task.projectId)}`}
+                size="small"
+                variant="outlined"
+                color="secondary"
+              />
+              {task.dueDate && (
+                <Chip
+                  label={`Due: ${task.dueDate}`}
+                  size="small"
+                  variant="outlined"
+                  className="bg-red-50 text-red-600"
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </Draggable>
+  );
+};
+
+// Status-based Board Component
+const StatusBoard = ({ tasks, projects, users, onDragEnd, selectedUserId }) => {
+  const statuses = ['todo', 'in-progress', 'completed'];
+
+  return (
+    <Box className="p-6 bg-gray-50 min-h-screen">
+      <Typography variant="h4" className="font-bold mb-6 text-center text-gray-800">
+        Task Board by Status
+      </Typography>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Grid container spacing={4} justifyContent="center">
+          {statuses.map((status) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={status}> {/* Updated Grid syntax */}
+              <Box className="bg-white rounded-xl shadow-lg p-4 h-full flex flex-col">
+                <Typography
+                  variant="h5"
+                  className={`font-semibold mb-4 pb-2 border-b-2 ${
+                    status === 'todo' ? 'border-gray-400 text-gray-700' :
+                    status === 'in-progress' ? 'border-blue-400 text-blue-700' :
+                    'border-green-400 text-green-700'
+                  }`}
+                >
+                  {status.replace('-', ' ').toUpperCase()}
+                </Typography>
+                <Droppable droppableId={status}>
+                  {(provided, snapshot) => (
+                    <Box
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className="flex-grow overflow-y-auto pr-2"
+                      style={{
+                        backgroundColor: snapshot.isDraggingOver ? '#e8f5e9' : 'transparent', // Light green when dragging over
+                        minHeight: '100px', // Ensure droppable area is visible
+                      }}
+                    >
+                      {tasks
+                        .filter((task) => task.status === status)
+                        .map((task, index) => (
+                          <TaskCard key={task.id} task={task} index={index} />
+                        ))}
+                      {provided.placeholder}
+                      {tasks.filter((task) => task.status === status).length === 0 && !snapshot.isDraggingOver && (
+                        <Typography variant="body2" color="text.secondary" className="text-center py-4">
+                          No tasks in this column.
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                </Droppable>
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      </DragDropContext>
+    </Box>
+  );
+};
+
+// User-based Board Component
+const UserBoard = ({ tasks, users, projects, onDragEnd, selectedUserId }) => {
+  return (
+    <Box className="p-6 bg-gray-50 min-h-screen">
+      <Typography variant="h4" className="font-bold mb-6 text-center text-gray-800">
+        Task Board by Assigned User
+      </Typography>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Grid container spacing={4} justifyContent="center">
+          {users.map((user) => (
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={user.id}> {/* Updated Grid syntax */}
+              <Box className="bg-white rounded-xl shadow-lg p-4 h-full flex flex-col">
+                <Typography variant="h5" className="font-semibold mb-4 pb-2 border-b-2 border-purple-400 text-purple-700">
+                  {user.name}
+                </Typography>
+                <Droppable droppableId={user.id}>
+                  {(provided, snapshot) => (
+                    <Box
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className="flex-grow overflow-y-auto pr-2"
+                      style={{
+                        backgroundColor: snapshot.isDraggingOver ? '#e3f2fd' : 'transparent', // Light blue when dragging over
+                        minHeight: '100px', // Ensure droppable area is visible
+                      }}
+                    >
+                      {tasks // Use original tasks here to show all, then blur non-selected
+                        .filter((task) => task.assignedTo === user.id)
+                        .map((task, index) => (
+                          <TaskCard
+                            key={task.id}
+                            task={task}
+                            index={index}
+                            isBlurred={selectedUserId && task.assignedTo !== selectedUserId}
+                          />
+                        ))}
+                      {provided.placeholder}
+                      {tasks.filter((task) => task.assignedTo === user.id).length === 0 && !snapshot.isDraggingOver && (
+                        <Typography variant="body2" color="text.secondary" className="text-center py-4">
+                          No tasks assigned to {user.name}.
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                </Droppable>
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      </DragDropContext>
+    </Box>
+  );
+};
+
+// Add Task Form Component
+const AddTaskForm = ({ users, projects, onAddTask, onClose }) => {
+  const { handleSubmit, control, reset, formState: { errors } } = useForm({
+    defaultValues: {
+      title: '',
+      description: '',
+      projectId: '',
+      status: 'todo',
+      assignedTo: '',
+      dueDate: ''
+    }
+  });
+
+  const onSubmit = (data) => {
+    onAddTask(data);
+    reset();
+    onClose();
+  };
+
+  return (
+    <Box component="form" onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
+      <Controller
+        name="title"
+        control={control}
+        rules={{ required: 'Task title is required' }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Task Title"
+            variant="outlined"
+            fullWidth
+            error={!!errors.title}
+            helperText={errors.title ? errors.title.message : ''}
+          />
+        )}
+      />
+      <Controller
+        name="description"
+        control={control}
+        rules={{ required: 'Description is required' }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Description"
+            variant="outlined"
+            fullWidth
+            multiline
+            rows={3}
+            error={!!errors.description}
+            helperText={errors.description ? errors.description.message : ''}
+          />
+        )}
+      />
+      <FormControl fullWidth variant="outlined" error={!!errors.projectId}>
+        <InputLabel>Project</InputLabel>
+        <Controller
+          name="projectId"
+          control={control}
+          rules={{ required: 'Project is required' }}
+          render={({ field }) => (
+            <Select {...field} label="Project">
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {projects.map((project) => (
+                <MenuItem key={project.id} value={project.id}>
+                  {project.name}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
+        />
+        {errors.projectId && <Typography color="error" variant="caption">{errors.projectId.message}</Typography>}
+      </FormControl>
+      <FormControl fullWidth variant="outlined" error={!!errors.assignedTo}>
+        <InputLabel>Assigned To</InputLabel>
+        <Controller
+          name="assignedTo"
+          control={control}
+          rules={{ required: 'Assignee is required' }}
+          render={({ field }) => (
+            <Select {...field} label="Assigned To">
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {users.map((user) => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.name}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
+        />
+        {errors.assignedTo && <Typography color="error" variant="caption">{errors.assignedTo.message}</Typography>}
+      </FormControl>
+      <FormControl fullWidth variant="outlined" error={!!errors.status}>
+        <InputLabel>Status</InputLabel>
+        <Controller
+          name="status"
+          control={control}
+          rules={{ required: 'Status is required' }}
+          render={({ field }) => (
+            <Select {...field} label="Status">
+              <MenuItem value="todo">To Do</MenuItem>
+              <MenuItem value="in-progress">In Progress</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
+            </Select>
+          )}
+        />
+        {errors.status && <Typography color="error" variant="caption">{errors.status.message}</Typography>}
+      </FormControl>
+      <Controller
+        name="dueDate"
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Due Date"
+            type="date"
+            variant="outlined"
+            fullWidth
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        )}
+      />
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Cancel
+        </Button>
+        <Button type="submit" variant="contained" color="primary">
+          Add Task
+        </Button>
+      </DialogActions>
+    </Box>
+  );
+};
+
+// User List Component
+const UserList = ({ users, selectedUserId, onSelectUser }) => {
+  return (
+    <Paper elevation={3} className="p-4 h-full flex flex-col bg-white rounded-xl shadow-lg">
+      <Typography variant="h6" className="font-bold mb-4 text-gray-800 border-b-2 pb-2 border-gray-300">
+        Users
+      </Typography>
+      <List className="flex-grow overflow-y-auto">
+        <ListItem
+          button
+          onClick={() => onSelectUser(null)} // Option to clear filter
+          selected={selectedUserId === null}
+          className="rounded-lg mb-2"
+          sx={{
+            '&.Mui-selected': {
+              backgroundColor: blue[50],
+              '&:hover': {
+                backgroundColor: blue[100],
+              },
+            },
+          }}
+        >
+          <ListItemIcon>
+            <Avatar sx={{ bgcolor: grey[500] }}>All</Avatar>
+          </ListItemIcon>
+          <ListItemText primary="All Users" />
+        </ListItem>
+        {users.map((user) => (
+          <ListItem
+            button
+            key={user.id}
+            onClick={() => onSelectUser(user.id)}
+            selected={selectedUserId === user.id}
+            className="rounded-lg mb-2"
+            sx={{
+              '&.Mui-selected': {
+                backgroundColor: purple[50],
+                '&:hover': {
+                  backgroundColor: purple[100],
+                },
+              },
+            }}
+          >
+            <ListItemIcon>
+              <Avatar sx={{ bgcolor: purple[500] }}>{user.name.charAt(0)}</Avatar>
+            </ListItemIcon>
+            <ListItemText primary={user.name} secondary={user.email} />
+          </ListItem>
+        ))}
+      </List>
+    </Paper>
+  );
+};
+
+
+// Main App Component
+const Gem = () => {
+  const [currentView, setCurrentView] = useState('status');
+  const [tasks, setTasks] = useState(initialTasks);
+  const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null); // State for selected user
+  const [selectedStartDate, setSelectedStartDate] = useState(null); // State for start date filter
+  const [selectedEndDate, setSelectedEndDate] = useState(null); // State for end date filter
+
+  const handleAddTask = (newTaskData) => {
+    const newTaskId = `task-${Date.now()}`;
+    const newTask = { id: newTaskId, ...newTaskData };
+    setTasks((prevTasks) => [...prevTasks, newTask]);
+  };
+
+  const handleOpenAddTaskDialog = () => {
+    setOpenAddTaskDialog(true);
+  };
+
+  const handleCloseAddTaskDialog = () => {
+    setOpenAddTaskDialog(false);
+  };
+
+  const handleSelectUser = (userId) => {
+    setSelectedUserId(userId);
+  };
+
+  const handleStartDateChange = (date) => {
+    setSelectedStartDate(date);
+    // If start date is after end date, clear end date
+    if (date && selectedEndDate && date.isAfter(selectedEndDate)) {
+      setSelectedEndDate(null);
+    }
+  };
+
+  const handleEndDateChange = (date) => {
+    setSelectedEndDate(date);
+    // If end date is before start date, clear start date
+    if (date && selectedStartDate && date.isBefore(selectedStartDate)) {
+      setSelectedStartDate(null);
+    }
+  };
+
+  // Function to handle drag and drop
+  const onDragEnd = (result) => {
+    const { source, destination, draggableId } = result;
+
+    // Dropped outside a list
+    if (!destination) {
+      return;
+    }
+
+    // If the item was dropped in the same place
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    // Find the task that was dragged
+    const draggedTask = tasks.find(task => task.id === draggableId);
+    if (!draggedTask) {
+      return;
+    }
+
+    // Create a new array of tasks to avoid direct state mutation
+    const newTasks = Array.from(tasks);
+    const taskIndex = newTasks.findIndex(task => task.id === draggableId);
+    newTasks.splice(taskIndex, 1); // Remove the dragged task from its original position
+
+    // Determine if it's a status change or user reassignment
+    const isStatusBoard = ['todo', 'in-progress', 'completed'].includes(source.droppableId);
+
+    if (isStatusBoard) {
+      // Logic for Status Board (changing status)
+      const newStatus = destination.droppableId;
+      const updatedTask = { ...draggedTask, status: newStatus };
+      newTasks.push(updatedTask); // Add the task back with its new status
+      setTasks(newTasks);
+
+    } else {
+      // Logic for User Board (changing assigned user)
+      const newAssignedTo = destination.droppableId;
+      const updatedTask = { ...draggedTask, assignedTo: newAssignedTo };
+      newTasks.push(updatedTask); // Add the task back with its new assignee
+      setTasks(newTasks);
+    }
+  };
+
+  // Apply date filtering first
+  const dateFilteredTasks = tasks.filter(task => {
+    if (!task.dueDate) return false; // Tasks without a due date are not included in date filters
+    const taskDueDate = dayjs(task.dueDate);
+
+    if (selectedStartDate && selectedEndDate) {
+      // Filter for a date range
+      return taskDueDate.isAfter(selectedStartDate.subtract(1, 'day'), 'day') && taskDueDate.isBefore(selectedEndDate.add(1, 'day'), 'day');
+    } else if (selectedStartDate && !selectedEndDate) {
+      // Filter for a single start date (treat as a single day)
+      return taskDueDate.isSame(selectedStartDate, 'day');
+    } else if (!selectedStartDate && selectedEndDate) {
+      // Filter for a single end date (treat as a single day)
+      return taskDueDate.isSame(selectedEndDate, 'day');
+    }
+    return true; // No date filter applied
+  });
+
+  // Then apply user filtering for the StatusBoard
+  const statusBoardTasks = selectedUserId
+    ? dateFilteredTasks.filter(task => task.assignedTo === selectedUserId)
+    : dateFilteredTasks;
+
+  // UserBoard will show all tasks filtered by date, then apply blur
+  const userBoardTasks = dateFilteredTasks;
+
+
+  return (
+    <ThemeProvider theme={theme}>
+      <div className="min-h-screen bg-gray-100 pb-10">
+        <Box className="p-4 bg-white shadow-sm flex justify-between items-center">
+          <Typography variant="h5" className="font-bold text-gray-800">
+            Project Management Dashboard
+          </Typography>
+          <div className="flex space-x-4">
+            <Button
+              variant={currentView === 'status' ? 'contained' : 'outlined'}
+              onClick={() => setCurrentView('status')}
+              color="primary"
+            >
+              Status Board
+            </Button>
+            <Button
+              variant={currentView === 'user' ? 'contained' : 'outlined'}
+              onClick={() => setCurrentView('user')}
+              color="primary"
+            >
+              User Board
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleOpenAddTaskDialog}
+            >
+              Add New Task
+            </Button>
+          </div>
+        </Box>
+
+        <Container maxWidth="xl" className="mt-8">
+          <Grid container spacing={4}>
+            {/* Main Content Area (Boards) */}
+            <Grid size={{ xs: 12, md: 9 }}> {/* Updated Grid syntax */}
+              {/* Date Filter Section */}
+              <Paper elevation={3} className="p-4 mb-6 bg-white rounded-xl shadow-lg flex flex-wrap gap-4 items-center justify-center">
+                <Typography variant="h6" className="font-semibold text-gray-700">Filter by Date:</Typography>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Start Date"
+                    value={selectedStartDate}
+                    onChange={handleStartDateChange}
+                    renderInput={(params) => <TextField {...params} variant="outlined" size="small" />}
+                  />
+                  <DatePicker
+                    label="End Date"
+                    value={selectedEndDate}
+                    onChange={handleEndDateChange}
+                    minDate={selectedStartDate || dayjs('1900-01-01')} // Ensure end date is not before start date
+                    renderInput={(params) => <TextField {...params} variant="outlined" size="small" />}
+                  />
+                </LocalizationProvider>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => { setSelectedStartDate(null); setSelectedEndDate(null); }}
+                  disabled={!selectedStartDate && !selectedEndDate}
+                >
+                  Clear Date Filter
+                </Button>
+              </Paper>
+
+              {currentView === 'status' ? (
+                <StatusBoard
+                  tasks={statusBoardTasks} // Tasks filtered by date and potentially user
+                  projects={projects}
+                  users={users}
+                  onDragEnd={onDragEnd}
+                  selectedUserId={selectedUserId}
+                />
+              ) : (
+                <UserBoard
+                  tasks={userBoardTasks} // Tasks filtered by date only (for blur effect)
+                  users={users}
+                  projects={projects}
+                  onDragEnd={onDragEnd}
+                  selectedUserId={selectedUserId}
+                />
+              )}
+            </Grid>
+            {/* User List Sidebar */}
+            <Grid size={{ xs: 12, md: 3 }}> {/* Updated Grid syntax */}
+              <UserList
+                users={users}
+                selectedUserId={selectedUserId}
+                onSelectUser={handleSelectUser}
+              />
+            </Grid>
+          </Grid>
+        </Container>
+
+        <Dialog open={openAddTaskDialog} onClose={handleCloseAddTaskDialog}>
+          <DialogTitle>Add New Task</DialogTitle>
+          <DialogContent>
+            <AddTaskForm
+              users={users}
+              projects={projects}
+              onAddTask={handleAddTask}
+              onClose={handleCloseAddTaskDialog}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+      {/* Tailwind CSS CDN for utility classes */}
+      <script src="https://cdn.tailwindcss.com"></script>
+    </ThemeProvider>
+  );
+};
+
+export default Gem;
