@@ -13,6 +13,8 @@ import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlin
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
+import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined'; // Added
+import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined'; // Added
 
 export const icons = {
   NavigationOutlinedIcon,
@@ -29,6 +31,8 @@ export const icons = {
   HelpOutlineOutlinedIcon,
   SecurityOutlinedIcon,
   InsightsOutlinedIcon,
+  ListAltOutlinedIcon,
+  CreditCardOutlinedIcon
 };
 
 // ==============================|| MENU ITEMS ||============================== //
@@ -46,9 +50,9 @@ const menuConfig = {
           title: 'Dashboard',
           type: 'item',
           icon: icons.DashboardOutlinedIcon,
-          url: '/dashboard/default',
-        },
-      ],
+          url: '/dashboard/default'
+        }
+      ]
     },
     {
       id: 'pages',
@@ -57,7 +61,7 @@ const menuConfig = {
       icon: icons.NavigationOutlinedIcon,
       children: [
         {
-          id: 'Area-management',
+          id: 'area-management',
           title: 'Network Area',
           type: 'collapse',
           icon: icons.WifiOutlinedIcon,
@@ -67,9 +71,9 @@ const menuConfig = {
               title: 'View Areas / Network',
               type: 'item',
               icon: icons.ChromeReaderModeOutlinedIcon,
-              url: '/areas',
-            },
-          ],
+              url: '/areas'
+            }
+          ]
         },
         {
           id: 'team-management',
@@ -82,16 +86,16 @@ const menuConfig = {
               title: 'All Teams',
               type: 'item',
               icon: icons.PeopleAltOutlinedIcon,
-              url: '/team/all',
+              url: '/team/all'
             },
             {
               id: 'add-team',
               title: 'Add Team',
               type: 'item',
               icon: icons.PersonAddAlt1OutlinedIcon,
-              url: '/team/create',
-            },
-          ],
+              url: '/team/create'
+            }
+          ]
         },
         {
           id: 'tickets-management',
@@ -104,45 +108,45 @@ const menuConfig = {
               title: 'Tickets List',
               type: 'item',
               icon: icons.ReportProblemOutlinedIcon,
-              url: '/tickets-list',
+              url: '/tickets-list'
             },
             {
               id: 'tickets-board',
               title: 'Tickets Board',
               type: 'item',
               icon: icons.HourglassEmptyOutlinedIcon,
-              url: '/tickets-board',
-            },
-          ],
+              url: '/tickets-board'
+            }
+          ]
         },
         {
-          id: 'Plans-management',
+          id: 'plans-management',
           title: 'Plans Management',
           type: 'collapse',
           icon: icons.ChromeReaderModeOutlinedIcon,
           children: [
             {
-              id: 'all-Plans',
+              id: 'all-plans',
               title: 'All Plans',
               type: 'item',
               icon: icons.ChromeReaderModeOutlinedIcon,
-              url: '/plans',
+              url: '/plans'
             },
             {
-              id: 'create-Plan',
+              id: 'create-plan',
               title: 'Create Plan',
               type: 'item',
               icon: icons.AppRegistrationOutlinedIcon,
-              url: '/plan/create',
+              url: '/plan/create'
             },
             {
-              id: 'Plans-categories',
+              id: 'plans-categories',
               title: 'Plans Categories',
               type: 'item',
               icon: icons.CategoryOutlinedIcon,
-              url: '/plan/categories',
-            },
-          ],
+              url: '/plan/categories'
+            }
+          ]
         },
         {
           id: 'customer-management',
@@ -155,41 +159,98 @@ const menuConfig = {
               title: 'All Customers',
               type: 'item',
               icon: icons.PeopleAltOutlinedIcon,
-              url: '/customers/all',
+              url: '/customers/all'
             },
             {
               id: 'add-customer',
               title: 'Add Customer',
               type: 'item',
               icon: icons.PersonAddAlt1OutlinedIcon,
-              url: '/customer/add',
+              url: '/customer/add'
             },
             {
-              id: 'add-connection',
-              title: 'Add Connection',
+              id: 'all-connections',
+              title: 'All Connections',
               type: 'item',
               icon: icons.AppRegistrationOutlinedIcon,
-              url: '/customers/add',
-            },
-          ],
+              url: '/connections'
+            }
+          ]
         },
         {
-          id: 'Projects-boards',
-          title: 'Project Boards',
+          id: 'leads-management',
+          title: 'Leads Management',
           type: 'collapse',
-          icon: icons.AppsOutlinedIcon,
+          icon: icons.PeopleAltOutlinedIcon,
           children: [
             {
-              id: 'project-board',
-              title: 'Board',
+              id: 'leads-dashboard',
+              title: 'Leads Dashboard',
               type: 'item',
-              icon: icons.AppsOutlinedIcon,
-              url: '/kanban',
+              icon: icons.DashboardOutlinedIcon,
+              url: '/leads/dashboard'
             },
-          ],
+            {
+              id: 'all-leads',
+              title: 'All Leads',
+              type: 'item',
+              icon: icons.ListAltOutlinedIcon,
+              url: '/leads/all'
+            },
+            {
+              id: 'add-lead',
+              title: 'Add Lead',
+              type: 'item',
+              icon: icons.PersonAddAlt1OutlinedIcon,
+              url: '/leads/add'
+            }
+          ]
         },
-
-      ],
+        {
+          id: 'billing-management',
+          title: 'Billing Management',
+          type: 'collapse',
+          icon: icons.CreditCardOutlinedIcon,
+          children: [
+            {
+              id: 'all-billing',
+              title: 'All Billings',
+              type: 'item',
+              icon: icons.PeopleAltOutlinedIcon,
+              url: '/billing'
+            },
+            // {
+            //   id: 'add-billing-customer',
+            //   title: 'Add Customer',
+            //   type: 'item',
+            //   icon: icons.PersonAddAlt1OutlinedIcon,
+            //   url: '/customer/add'
+            // },
+            // {
+            //   id: 'all-billing-connections',
+            //   title: 'All Connections',
+            //   type: 'item',
+            //   icon: icons.AppRegistrationOutlinedIcon,
+            //   url: '/connections'
+            // }
+          ]
+        },
+        // {
+        //   id: 'projects-boards',
+        //   title: 'Project Boards',
+        //   type: 'collapse',
+        //   icon: icons.AppsOutlinedIcon,
+        //   children: [
+        //     {
+        //       id: 'project-board',
+        //       title: 'Board',
+        //       type: 'item',
+        //       icon: icons.AppsOutlinedIcon,
+        //       url: '/kanban'
+        //     }
+        //   ]
+        // }
+      ]
     },
     {
       id: 'utils',
@@ -202,9 +263,9 @@ const menuConfig = {
           title: 'Icons',
           type: 'item',
           icon: icons.InsightsOutlinedIcon,
-          external: true,
-        },
-      ],
+          external: true
+        }
+      ]
     },
     {
       id: 'support',
@@ -217,11 +278,11 @@ const menuConfig = {
           title: 'Documentation',
           type: 'item',
           icon: icons.HelpOutlineOutlinedIcon,
-          external: true,
-        },
-      ],
-    },
-  ],
+          external: true
+        }
+      ]
+    }
+  ]
 };
 
 export default menuConfig;

@@ -1,13 +1,13 @@
 import React from 'react';
 import Loadable from '../component/Loadable';
 import { lazy } from 'react';
-import Profile from '../views/Profile/index';
+import Profile from '../views/Profile/Index';
 import AllCustomers from '../views/Customers/All';
 import AddCustomer from '../views/Customers/Add';
 import SuspendedCustomer from '../views/Customers/Suspended';
 
 // Teams
-import AllTeam from '../views/TeamManagement/All'
+import AllTeam from '../views/TeamManagement/All';
 import AddTeam from '../views/TeamManagement/AddTeam';
 import SuspendedTeam from '../views/TeamManagement/Suspended';
 
@@ -19,13 +19,7 @@ import AllAdmin from '../views/AdminManagement/All';
 import CreateAdmin from '../views/AdminManagement/CreateAdmin';
 import RegionList from '../views/Regions/RegioList';
 
-
-
-
-
-
 import AdminRoles from '../views/AdminManagement/AdminRoles';
-
 
 // SetupBox
 import SetupBoxList from '../views/SetupBox/All';
@@ -38,8 +32,7 @@ import AddPackage from '../views/Packages/AddPackage';
 import ActivePackages from '../views/Packages/ActivePackages';
 import FeaturedPackages from '../views/Packages/FeaturedPackages';
 
-
-// Payment 
+// Payment
 import PaymentsOverview from '../views/Payment/PaymentOverview';
 import AllPayments from '../views/Payment/All';
 import Invoices from '../views/Payment/Invoice';
@@ -75,8 +68,6 @@ import TicketsList from '../views/TicketBoard/TicketsList';
 // import TicketDetails from '../views/Support/TicketDetails/TicketDetails';
 import TicketDetails from '../views/TicketDetail/Index';
 
-
-
 // Import existing screens
 const DashboardDefault = Loadable(lazy(() => import('../views/Dashboard/Default')));
 const UtilsTypography = Loadable(lazy(() => import('../views/Utils/Typography')));
@@ -111,7 +102,6 @@ const MainRoutes = [
           { path: '/Home', element: <DashboardDefault /> },
           { path: '/profile', element: <Profile /> },
 
-
           { path: '/areas', element: <RegionList /> },
           { path: '/areas/:id/view', element: <RegionForm mode="view" /> },
           { path: '/areas/:id/edit', element: <RegionForm mode="edit" /> },
@@ -119,31 +109,23 @@ const MainRoutes = [
 
           // teams
 
-
           { path: '/team/all', element: <AllTeam /> },
           { path: '/team/:id', element: <TeamDetails /> },
           { path: '/team/create', element: <AddTeam /> },
           { path: '/team/suspended', element: <SuspendedTeam /> },
           { path: '/team/roles', element: <TeamRoles /> },
 
-
-
           { path: '/customer/add', element: <AddCustomer4 /> },
-
-
-
 
           // Typography & Sample
           { path: '/utils/util-typography', element: <UtilsTypography /> },
           { path: '/sample-page', element: <SamplePage /> },
-
 
           //       <Route path="/regions/:id/view" element={<RegionForm mode="view" />} />
           // <Route path="/regions/:id/edit" element={<RegionForm mode="edit" />} />
           // <Route path="/regions/create" element={<RegionForm mode="create" />} />
 
           { path: '/network3', element: <Network /> },
-
 
           // Complaints (Customer)
           { path: '/complaints/registerComplaint', element: <RegisterComplaintScreen /> },
@@ -177,8 +159,6 @@ const MainRoutes = [
           { path: '/projects/allprojects', element: <ProfileScreen /> },
           { path: '/projects/create-project', element: <ProfileScreen /> },
 
-
-
           { path: '/tasks/allTasks', element: <TaskBoard /> },
 
           { path: '/complaints/all', element: <ProfileScreen /> },
@@ -191,15 +171,12 @@ const MainRoutes = [
           { path: '/customers/create', element: <AddCustomer /> },
           { path: '/customers/suspended', element: <SuspendedCustomer /> },
 
-
           { path: '/admin/all', element: <AllAdmin /> },
           { path: '/admin/create', element: <CreateAdmin /> },
           { path: '/admin/suspended', element: <SusPendedAdmin /> },
           { path: '/admin/roles', element: <AdminRoles /> },
 
-
           { path: '/network/all', element: <NetworkStatusManager /> },
-
 
           { path: '/setupbox/all', element: <SetupBoxList /> },
           { path: '/setupbox/create', element: <AddSetupBox /> },
@@ -209,10 +186,6 @@ const MainRoutes = [
           { path: '/plan/create', element: <CreatePlan /> },
           { path: '/plan/edit/:id', element: <EditPlan /> },
           { path: 'plan/categories', element: <PlanCategory /> },
-
-
-
-
 
           { path: '/packages/create', element: <AddPackage /> },
           { path: '/packages/active', element: <ActivePackages /> },
@@ -228,7 +201,7 @@ const MainRoutes = [
 
           { path: '/referrals/overview', element: <ProfileScreen /> },
           { path: '/referrals/users', element: <ProfileScreen /> },
-          { path: '/referrals/rewards', element: <RewardManagement /> },
+          { path: '/referrals/rewards', element: <RewardManagement /> }
 
           // Authentication
           // { path: '/application/login', element: <ProfileScreen /> },

@@ -1,4 +1,3 @@
-// src/views/TicketBoard/TicketList.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   Box,
@@ -10,185 +9,144 @@ import {
   IconButton,
   Tooltip,
   Chip,
-  CircularProgress
+  Grid,
+  Card,
+  CardContent,
+  alpha,
+  useTheme,
+  Avatar
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { DataGrid, GridToolbarExport, GridToolbarColumnsButton, GridToolbarFilterButton } from '@mui/x-data-grid';
 import {
-  DataGrid,
-  GridToolbarExport,
-  GridToolbarColumnsButton,
-  GridToolbarFilterButton
-} from '@mui/x-data-grid';
-import {
-  Add as AddIcon,
-  Refresh as RefreshIcon,
-  Search as SearchIcon,
-  Visibility as VisibilityIcon,
-  Edit as EditIcon,
-  DeleteOutline as DeleteIcon
+  AddRounded as AddIcon,
+  RefreshRounded as RefreshIcon,
+  SearchRounded as SearchIcon,
+  VisibilityRounded as VisibilityIcon,
+  DeleteOutlineRounded as DeleteIcon,
+  ConfirmationNumberRounded as TicketIcon,
+  HourglassEmptyRounded as PendingIcon,
+  CheckCircleRounded as ResolvedIcon,
+  EditRounded as EditIcon,
+  PersonOutline as PersonIcon
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import debounce from 'lodash.debounce';
 
 import Breadcrumbs from '../../component/Breadcrumb';
 import AddTicket from './AddTicket';
-// import EditTicket from './EditTicket';
-import { getAllTickets, deleteTicket, resetTicketState } from '../../redux/features/Tickets/TicketSlice';
+import { getAllTickets, deleteTicket } from '../../redux/features/Tickets/TicketSlice';
 
-// ===================================================
-// 🔹 CHIP COMPONENT — Unified for Status & Priority
-// ===================================================
-const ChipStyled = ({ label = 'N/A', variant }) => {
+/* ===================================================
+   🔹 STATUS & PRIORITY CONFIG
+=================================================== */
+const STATUS_COLORS = {
+  open: 'info',
+  'in progress': 'warning',
+  escalated: 'error',
+  resolved: 'success',
+  closed: 'success'
+};
+
+const PRIORITY_COLORS = {
+  high: 'error',
+  medium: 'warning',
+  low: 'success',
+  critical: 'error'
+};
+
+const ModernChip = ({ label, variant }) => {
   const theme = useTheme();
-
-  const colorMap = {
-    status: {
-      Open: 'info',
-      'In Progress': 'warning',
-      Escalated: 'error',
-      Closed: 'success',
-      Resolved: 'success',
-      Default: 'default'
-    },
-    priority: {
-      Low: 'success',
-      Medium: 'warning',
-      High: 'error',
-      Critical: 'error',
-      Default: 'default'
-    }
-  };
-
-  const color = colorMap[variant]?.[label] || colorMap[variant]?.Default || 'default';
+  const key = String(label || '').toLowerCase();
+  const paletteKey = variant === 'status' ? STATUS_COLORS[key] : PRIORITY_COLORS[key];
+  const palette = theme.palette[paletteKey] || theme.palette.grey;
 
   return (
     <Chip
-      label={label}
-      color={color !== 'default' ? color : undefined}
       size="small"
-      variant="outlined"
+      label={label || '—'}
       sx={{
-        fontWeight: 600,
+        fontWeight: 700,
+        fontSize: '0.7rem',
+        borderRadius: '6px',
+        backgroundColor: alpha(palette.main, 0.1),
+        color: palette.main,
+        border: `1px solid ${alpha(palette.main, 0.2)}`,
         textTransform: 'capitalize',
-        fontSize: '0.75rem',
-        minWidth: 90,
-        ...(color === 'default' && {
-          backgroundColor: theme.palette.background.paper,
-          color: theme.palette.text.secondary,
-          borderColor: theme.palette.grey[300]
-        })
+        height: 24,
+        '& .MuiChip-label': { px: 1.2 }
       }}
     />
   );
 };
 
-// ===================================================
-// 🔹 CUSTOM TOOLBAR WITH SEARCH, REFRESH, EXPORT
-// ===================================================
-const CustomToolbar = ({ searchTerm, setSearchTerm, handleRefresh, handleAddClick }) => {
-  return (
-    <Box
-      sx={{
-        p: 1.5,
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 2
-      }}
-    >
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        justifyContent="space-between"
-        alignItems="center"
-        flexGrow={1}
-        spacing={2}
-        sx={{ width: '100%' }}
-      >
-        <TextField
-          label="Search tickets..."
-          variant="outlined"
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1 }} />
-          }}
-          sx={{ width: { xs: '100%', sm: 300 } }}
-        />
-
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAddClick}
-            size="small"
-            disableElevation
-          >
-            Add Ticket
-          </Button>
-
-          <Tooltip title="Refresh Data">
-            <IconButton onClick={handleRefresh} size="small" color="primary">
-              <RefreshIcon />
-            </IconButton>
-          </Tooltip>
-
-          <GridToolbarColumnsButton />
-          <GridToolbarFilterButton />
-          <GridToolbarExport />
-        </Stack>
+/* ===================================================
+   🔹 STAT CARD
+=================================================== */
+const StatCard = ({ title, count, icon: Icon, color }) => (
+  <Card sx={{ borderRadius: '16px', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+    <CardContent sx={{ p: '24px !important' }}>
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: alpha(color, 0.1), color, display: 'flex' }}>
+          <Icon fontSize="medium" />
+        </Box>
+        <Box>
+          <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ letterSpacing: 0.5, textTransform: 'uppercase' }}>
+            {title}
+          </Typography>
+          <Typography variant="h4" fontWeight={800} sx={{ lineHeight: 1.2 }}>
+            {count}
+          </Typography>
+        </Box>
       </Stack>
-    </Box>
-  );
-};
+    </CardContent>
+  </Card>
+);
 
-// ===================================================
-// 🔹 MAIN COMPONENT — TICKETS LIST
-// ===================================================
+/* ===================================================
+   🔹 MAIN COMPONENT
+=================================================== */
 const TicketsList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
 
-  const { allTickets, isLoading, isError, isSuccess, message } = useSelector((state) => state.ticket);
+  const { allTickets = [], isLoading } = useSelector((state) => state.ticket);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredTickets, setFilteredTickets] = useState([]);
   const [openAddTicketDialog, setOpenAddTicketDialog] = useState(false);
-  const [openEditTicketDialog, setOpenEditTicketDialog] = useState(false);
-  const [editingTicket, setEditingTicket] = useState(null);
 
-  // Fetch tickets
   useEffect(() => {
     dispatch(getAllTickets());
   }, [dispatch]);
 
-  // Toast feedback
-  useEffect(() => {
-    if (isError) toast.error(message);
-    if (isSuccess) toast.success(message);
-    dispatch(resetTicketState());
-  }, [isError, isSuccess, message, dispatch]);
+  const stats = useMemo(
+    () => ({
+      total: allTickets.length,
+      open: allTickets.filter((t) => t.status === 'Open').length,
+      pending: allTickets.filter((t) => t.status === 'In Progress').length,
+      resolved: allTickets.filter((t) => ['Resolved', 'Closed'].includes(t.status)).length
+    }),
+    [allTickets]
+  );
 
-  // Debounced Search (for smoother performance)
   const debouncedSearch = useMemo(
     () =>
       debounce((term) => {
-        const filtered = allTickets.filter((t) => {
-          const search = term.toLowerCase();
-          return (
-            t?.description?.toLowerCase().includes(search) ||
-            t?.status?.toLowerCase().includes(search) ||
-            t?.priority?.toLowerCase().includes(search) ||
-            t?.assignedTo?.firstName?.toLowerCase().includes(search) ||
-            t?.assignedTo?.lastName?.toLowerCase().includes(search)
-          );
-        });
-        setFilteredTickets(filtered);
+        const value = term.toLowerCase();
+        setFilteredTickets(
+          allTickets.filter((t) => {
+            const agentName = `${t.assignedTo?.firstName || ''} ${t.assignedTo?.lastName || ''}`.toLowerCase();
+            return (
+              t.description?.toLowerCase().includes(value) ||
+              t.status?.toLowerCase().includes(value) ||
+              agentName.includes(value) ||
+              t.issueType?.toLowerCase().includes(value)
+            );
+          })
+        );
       }, 400),
     [allTickets]
   );
@@ -197,163 +155,230 @@ const TicketsList = () => {
     debouncedSearch(searchTerm);
   }, [searchTerm, debouncedSearch]);
 
-  // Refresh
-  const handleRefresh = () => dispatch(getAllTickets());
-
-  // Add & Edit
-  const handleAddClick = () => setOpenAddTicketDialog(true);
-  const handleEditClose = () => {
-    setOpenEditTicketDialog(false);
-    setEditingTicket(null);
-  };
-  const openEditDialog = (ticketData) => {
-    setEditingTicket(ticketData);
-    setOpenEditTicketDialog(true);
-  };
-
-  // Delete Handler
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this ticket?')) {
-      dispatch(deleteTicket(id));
-    }
-  };
-
-  // DataGrid Columns (memoized)
   const columns = useMemo(
     () => [
       {
         field: 'description',
-        headerName: 'Description',
-        flex: 2.5,
-        minWidth: 200,
-        sortable: false,
+        headerName: 'Ticket & Issue',
+        flex: 2,
+        minWidth: 280,
         renderCell: (params) => (
-          <Tooltip title={params.value || ''} placement="top">
-            <Typography variant="body2" noWrap>
-              {params.value}
+          <Stack justifyContent="center" sx={{ height: '100%', py: 1 }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+              <Typography variant="body2" fontWeight={700} sx={{ color: '#1e293b' }}>
+                {params.row.issueType || 'Other'}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  bgcolor: '#eff6ff',
+                  px: 0.8,
+                  py: 0.2,
+                  borderRadius: 1,
+                  fontWeight: 700,
+                  color: '#2563eb',
+                  fontSize: '0.65rem',
+                  border: '1px solid #dbeafe'
+                }}
+              >
+                #{params.row._id?.slice(-6).toUpperCase()}
+              </Typography>
+            </Stack>
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.75rem', maxWidth: 250 }}>
+              {params.value || 'No description provided'}
             </Typography>
-          </Tooltip>
+          </Stack>
         )
       },
       {
         field: 'status',
         headerName: 'Status',
         width: 130,
-        renderCell: (params) => <ChipStyled label={params.value} variant="status" />
+        renderCell: (params) => (
+          <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+            <ModernChip label={params.value} variant="status" />
+          </Box>
+        )
       },
       {
         field: 'priority',
         headerName: 'Priority',
-        width: 130,
-        renderCell: (params) => <ChipStyled label={params.value} variant="priority" />
+        width: 120,
+        renderCell: (params) => (
+          <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+            <ModernChip label={params.value} variant="priority" />
+          </Box>
+        )
       },
       {
         field: 'assignedTo',
-        headerName: 'Assigned To',
-        flex: 1.5,
-        minWidth: 150,
-        valueGetter: (params) => {
-          const assigned = params.row?.assignedTo;
-          return assigned ? `${assigned.firstName || ''} ${assigned.lastName || ''}` : 'Unassigned';
+        headerName: 'Assigned Agent',
+        flex: 1,
+        minWidth: 220,
+        renderCell: (params) => {
+          const agent = params.row?.assignedTo;
+          const name = agent ? `${agent.firstName} ${agent.lastName}` : 'Unassigned';
+          const initials = agent ? `${agent.firstName?.[0] || ''}${agent.lastName?.[0] || ''}` : '';
+
+          return (
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ height: '100%' }}>
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
+                  bgcolor: agent ? '#2563eb' : '#f1f5f9',
+                  color: agent ? '#fff' : '#94a3b8'
+                }}
+              >
+                {agent ? initials.toUpperCase() : <PersonIcon fontSize="small" />}
+              </Avatar>
+              <Stack spacing={0} justifyContent="center">
+                <Typography variant="body2" fontWeight={700} sx={{ lineHeight: 1.2, color: '#1e293b' }}>
+                  {name}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.65rem' }}
+                >
+                  {agent?.role || 'TECHNICIAN'}
+                </Typography>
+              </Stack>
+            </Stack>
+          );
         }
       },
       {
         field: 'createdAt',
-        headerName: 'Created On',
+        headerName: 'Date Created',
         width: 150,
-        valueFormatter: (params) => dayjs(params.value).format('DD MMM YYYY')
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500, display: 'flex', alignItems: 'center', height: '100%' }}>
+            {dayjs(params.value).format('DD MMM YYYY')}
+          </Typography>
+        )
       },
       {
         field: 'actions',
-        headerName: 'Actions',
-        width: 150,
+        headerName: '',
+        width: 100,
         sortable: false,
+        align: 'right',
         renderCell: (params) => (
-          <Stack direction="row" spacing={1}>
-            <Tooltip title="View Details">
-              <IconButton color="primary" size="small" onClick={() => navigate(`/ticket/${params.row._id}`)}>
-                <VisibilityIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Edit Ticket">
-              <IconButton size="small" color="primary" onClick={() => openEditDialog(params.row)}>
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete Ticket">
-              <IconButton size="small" color="error" onClick={() => handleDelete(params.row._id)}>
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
+          <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center" sx={{ height: '100%', width: '100%' }}>
+            <IconButton
+              size="small"
+              onClick={() => navigate(`/ticket/${params.row._id}`)}
+              sx={{ color: '#2563eb', bgcolor: '#eff6ff', '&:hover': { bgcolor: '#dbeafe' } }}
+            >
+              <VisibilityIcon fontSize="inherit" />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => {
+                if (window.confirm('Delete ticket?')) dispatch(deleteTicket(params.row._id));
+              }}
+              sx={{ bgcolor: '#fef2f2', '&:hover': { bgcolor: '#fee2e2' } }}
+            >
+              <DeleteIcon fontSize="inherit" />
+            </IconButton>
           </Stack>
         )
       }
     ],
-    [navigate]
+    [navigate, dispatch]
   );
 
   return (
-    <Box p={4}>
-      <Breadcrumbs
-        title="Ticket Management"
-        subtitle="View and manage all support requests."
-        isCard
-        links={[
-          { label: 'Dashboard', to: '/' },
-          { label: 'Tickets', to: '/tickets' }
-        ]}
-      />
+    <Box p={{ xs: 2, md: 4 }} sx={{ bgcolor: '#f8fafc', minHeight: '100vh' }}>
+      {/* <Breadcrumbs
+        title="Support Desk"
+        subtitle="Monitor and resolve customer issues globally"
+        links={[{ label: 'Home', to: '/' }, { label: 'Tickets' }]}
+      /> */}
 
-      <Paper sx={{ mt: 4, height: 700 }}>
+      <Grid container spacing={3} sx={{ my: 2 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard title="Total Tickets" count={stats.total} icon={TicketIcon} color="#6366f1" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard title="Open Requests" count={stats.open} icon={PendingIcon} color="#0ea5e9" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard title="On-Going" count={stats.pending} icon={EditIcon} color="#f59e0b" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard title="Resolved" count={stats.resolved} icon={ResolvedIcon} color="#10b981" />
+        </Grid>
+      </Grid>
+
+      <Paper sx={{ borderRadius: '16px', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+        <Box sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#fff' }}>
+          <TextField
+            size="small"
+            placeholder="Search tickets..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ width: 320, '& .MuiOutlinedInput-root': { borderRadius: '10px', bgcolor: '#f8fafc' } }}
+            InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: '#94a3b8' }} /> }}
+          />
+          <Stack direction="row" spacing={1.5}>
+            <Tooltip title="Refresh">
+              <IconButton onClick={() => dispatch(getAllTickets())}>
+                <RefreshIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenAddTicketDialog(true)}
+              sx={{
+                borderRadius: '10px',
+                textTransform: 'none',
+                fontWeight: 700,
+                px: 3,
+                bgcolor: '#2563eb',
+                boxShadow: 'none',
+                '&:hover': { bgcolor: '#1d4ed8', boxShadow: 'none' }
+              }}
+            >
+              New Ticket
+            </Button>
+          </Stack>
+        </Box>
+
         <DataGrid
           rows={searchTerm ? filteredTickets : allTickets}
           columns={columns}
           getRowId={(row) => row._id}
           loading={isLoading}
+          autoHeight
+          rowHeight={80}
           disableRowSelectionOnClick
-          density="comfortable"
-          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-          pageSizeOptions={[10, 25, 50]}
-          slots={{
-            toolbar: () => (
-              <CustomToolbar
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                handleRefresh={handleRefresh}
-                handleAddClick={handleAddClick}
-              />
-            ),
-            loadingOverlay: () => (
-              <Stack alignItems="center" justifyContent="center" height="100%">
-                <CircularProgress />
-                <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-                  Loading Tickets...
-                </Typography>
-              </Stack>
-            ),
-            noRowsOverlay: () => (
-              <Stack alignItems="center" justifyContent="center" height="100%">
-                <Typography variant="body2" color="text.secondary">
-                  No tickets found.
-                </Typography>
-              </Stack>
-            )
-          }}
           sx={{
             border: 'none',
             '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: theme.palette.action.hover
+              bgcolor: '#f8fafc',
+              color: '#475569',
+              fontWeight: 800,
+              borderBottom: '1px solid #e2e8f0'
+            },
+            '& .MuiDataGrid-cell': {
+              borderBottom: '1px solid #f1f5f9',
+              display: 'flex',
+              alignItems: 'center'
+            },
+            '& .MuiDataGrid-row:hover': {
+              bgcolor: '#fbfcfd'
             }
           }}
         />
       </Paper>
 
-      {/* Dialogs */}
       <AddTicket open={openAddTicketDialog} handleClose={() => setOpenAddTicketDialog(false)} />
-
-      {/* {openEditTicketDialog && (
-        <EditTicket open={openEditTicketDialog} handleClose={handleEditClose} ticketData={editingTicket} />
-      )} */}
     </Box>
   );
 };

@@ -1,5 +1,4 @@
-// src/views/TicketBoard/AddTicket.jsx
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -10,20 +9,32 @@ import {
   MenuItem,
   Autocomplete,
   CircularProgress,
-  Box
+  Box,
+  Typography,
+  Stack,
+  alpha,
+  useTheme
 } from '@mui/material';
+import { FlagRounded as PriorityIcon, ConfirmationNumberRounded as TicketIcon } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { createInternalTicket } from '../../redux/features/Tickets/TicketSlice';
 import { getAllConnections } from '../../redux/features/Connection/ConnectionSlice';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
-const AddTicket = ({ open, handleClose }) => {
-  const dispatch = useDispatch();
-  const { connections, isConnectionLoading } = useSelector((state) => state.connection);
+const PRIORITY_OPTIONS = [
+  { label: 'Low', color: '#10b981' },
+  { label: 'Medium', color: '#f59e0b' },
+  { label: 'High', color: '#ef4444' }
+];
 
-  console.log('isConnectionLoading', isConnectionLoading);
-  console.log('connections', connections);
+const AddTicket = ({ open, handleClose }) => {
+  const theme = useTheme();
+  const dispatch = useDispatch();
+
+  // Selectors
+  const { connections = [], isConnectionLoading } = useSelector((state) => state.connection);
+  const { isCreatingTicket } = useSelector((state) => state.ticket); // Assuming you have a loading state for creation
 
   const {
     control,
@@ -32,138 +43,117 @@ const AddTicket = ({ open, handleClose }) => {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      subject: '',
       description: '',
       priority: 'Medium',
-      status: 'Open',
       connectionId: ''
     }
   });
 
-  // Autofocus input
-  const subjectRef = useRef();
-
   useEffect(() => {
     if (open) {
       dispatch(getAllConnections());
-      // Focus the first field
-      setTimeout(() => subjectRef.current?.focus(), 100);
     }
   }, [open, dispatch]);
 
   const onSubmit = async (data) => {
     try {
-      await dispatch(createInternalTicket(data));
+      await dispatch(createInternalTicket(data)).unwrap();
       toast.success('Ticket created successfully');
-      reset();
-      handleClose();
+      handleInternalClose();
     } catch (error) {
-      toast.error(`Error creating ticket: ${error?.message || 'Unknown error'}`);
+      toast.error(error || 'Failed to create ticket');
     }
+  };
+
+  const handleInternalClose = () => {
+    reset();
+    handleClose();
   };
 
   return (
     <Dialog
       open={open}
-      onClose={() => {
-        reset(); // Clear form on close
-        handleClose();
-      }}
+      onClose={handleInternalClose}
       fullWidth
-      maxWidth="sm"
-      disableEnforceFocus={false}
-      disableAutoFocus={false}
-      disableRestoreFocus={false}
+      maxWidth="xs"
+      PaperProps={{
+        sx: { borderRadius: '16px', p: 1 }
+      }}
     >
-      <DialogTitle>Add New Ticket</DialogTitle>
+      <DialogTitle sx={{ pb: 1 }}>
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <Box
+            sx={{
+              p: 1,
+              borderRadius: '10px',
+              bgcolor: alpha(theme.palette.primary.main, 0.1),
+              color: theme.palette.primary.main,
+              display: 'flex'
+            }}
+          >
+            <TicketIcon />
+          </Box>
+          <Box>
+            <Typography variant="h6" fontWeight={800}>
+              Create Ticket
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Log a new internal support request
+            </Typography>
+          </Box>
+        </Stack>
+      </DialogTitle>
 
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          {/* Connection */}
+      <DialogContent sx={{ mt: 1 }}>
+        <Stack spacing={2.5}>
+          {/* Connection Selection */}
           <Controller
             name="connectionId"
             control={control}
-            rules={{ required: 'Connection is required' }}
+            rules={{ required: 'Please select a customer connection' }}
             render={({ field }) => (
               <Autocomplete
                 {...field}
                 options={connections}
-                getOptionLabel={(opt) => (opt?.userId && opt?.userName ? `${opt.userId} – ${opt.userName}` : '')}
-                onChange={(_, value) => field.onChange(value?._id)}
-                value={connections.find((c) => c._id === field.value) || null}
                 loading={isConnectionLoading}
-                disableClearable
+                getOptionLabel={(opt) => (opt?.userName ? `${opt.userName} (${opt.userId})` : '')}
+                isOptionEqualToValue={(option, value) => option._id === value._id}
+                onChange={(_, data) => field.onChange(data?._id)}
+                value={connections.find((c) => c._id === field.value) || null}
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Select Connection"
-                    variant="outlined"
+                    label="Customer Connection"
                     error={!!errors.connectionId}
                     helperText={errors.connectionId?.message}
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {isConnectionLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      )
+                    }}
                   />
                 )}
               />
-              // <Autocomplete
-              //     {...field}
-              //     options={connections}
-              //     getOptionLabel={(opt) =>
-              //         opt?.userId && opt?.userName
-              //             ? `${opt.userId} – ${opt.userName}`
-              //             : ''
-              //     }
-              //     onChange={(_, value) => field.onChange(value?._id)}
-              //     value={connections?.find((c) => c._id === field.value) || null}
-              //     // loading={isConnectionLoading}
-              //     disableClearable
-              //     // noOptionsText={
-              //     //     isConnectionLoading ? 'Loading...' : 'No connections available'
-              //     // }
-              //     renderInput={(params) => (
-              //         <TextField
-              //             {...params}
-              //             label="Select Connection"
-              //             variant="outlined"
-              //             error={!!errors.connectionId}
-              //             helperText={
-              //                 errors.connectionId?.message ||
-              //                 (connections.length === 0 ? 'Please add connections first' : '')
-              //             }
-              //         />
             )}
-            disabled={connections.length === 0}
           />
-
-          {/* Subject */}
-          {/* <Controller
-                        name="subject"
-                        control={control}
-                        rules={{ required: 'Subject is required' }}
-                        render={({ field }) => (
-                            <TextField
-                                {...field}
-                                inputRef={subjectRef}
-                                label="Subject"
-                                fullWidth
-                                variant="outlined"
-                                error={!!errors.subject}
-                                helperText={errors.subject?.message}
-                            />
-                        )}
-                    /> */}
 
           {/* Description */}
           <Controller
             name="description"
             control={control}
-            rules={{ required: 'Description is required' }}
+            rules={{ required: 'Briefly describe the issue' }}
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Description"
-                fullWidth
-                variant="outlined"
+                label="Issue Description"
+                placeholder="Describe the speed, connectivity, or hardware issue..."
                 multiline
-                rows={4}
+                rows={3}
+                fullWidth
                 error={!!errors.description}
                 helperText={errors.description?.message}
               />
@@ -174,58 +164,41 @@ const AddTicket = ({ open, handleClose }) => {
           <Controller
             name="priority"
             control={control}
-            rules={{ required: 'Priority is required' }}
             render={({ field }) => (
-              <TextField
-                {...field}
-                label="Priority"
-                select
-                fullWidth
-                variant="outlined"
-                error={!!errors.priority}
-                helperText={errors.priority?.message}
-              >
-                {['Low', 'Medium', 'High'].map((priority) => (
-                  <MenuItem key={priority} value={priority}>
-                    {priority}
+              <TextField {...field} select label="Set Priority" fullWidth error={!!errors.priority}>
+                {PRIORITY_OPTIONS.map((option) => (
+                  <MenuItem key={option.label} value={option.label}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <PriorityIcon sx={{ color: option.color, fontSize: 18 }} />
+                      <Typography variant="body2" fontWeight={600}>
+                        {option.label}
+                      </Typography>
+                    </Stack>
                   </MenuItem>
                 ))}
               </TextField>
             )}
           />
-
-          {/* Status */}
-          {/* <Controller
-                        name="status"
-                        control={control}
-                        rules={{ required: 'Status is required' }}
-                        render={({ field }) => (
-                            <TextField
-                                {...field}
-                                label="Status"
-                                select
-                                fullWidth
-                                variant="outlined"
-                                error={!!errors.status}
-                                helperText={errors.status?.message}
-                            >
-                                {['Open', 'In Progress', 'Closed'].map((status) => (
-                                    <MenuItem key={status} value={status}>
-                                        {status}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        )}
-                    /> */}
-        </Box>
+        </Stack>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose} color="secondary">
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={handleInternalClose} color="inherit" sx={{ fontWeight: 700, textTransform: 'none' }}>
           Cancel
         </Button>
-        <Button onClick={handleSubmit(onSubmit)} color="primary" variant="contained" disabled={isConnectionLoading}>
-          {isConnectionLoading ? <CircularProgress size={20} color="inherit" /> : 'Add Ticket'}
+        <Button
+          onClick={handleSubmit(onSubmit)}
+          variant="contained"
+          disabled={isCreatingTicket}
+          sx={{
+            borderRadius: '8px',
+            px: 4,
+            fontWeight: 700,
+            textTransform: 'none',
+            boxShadow: 'none'
+          }}
+        >
+          {isCreatingTicket ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Create Ticket'}
         </Button>
       </DialogActions>
     </Dialog>

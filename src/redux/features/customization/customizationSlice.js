@@ -1,3 +1,4 @@
+//src/reduc/features/customization/customizationSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
 import config from '../../../config';
@@ -30,9 +31,11 @@ const customizationSlice = createSlice({
     // set_BorderRadius(state, action) {
     //   state.borderRadius = action.payload; // Update borderRadius with the payload
     // }
+    // ... inside customizationSlice
 
     setMenuOpen(state, action) {
-      state.isOpen = action.payload.isOpen;
+      state.isOpen = [action.payload];
+      // state.isOpen = action.payload.isOpen;
     },
     setMenuType(state, action) {
       state.navType = action.payload.navType;

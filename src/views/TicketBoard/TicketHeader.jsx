@@ -1,29 +1,40 @@
-// src/views/TicketBoard/TicketHeader.jsx
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Select, MenuItem, FormControl, InputLabel, Button, Stack, Tooltip, IconButton } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Stack,
+  Tooltip,
+  IconButton,
+  ToggleButton,
+  ToggleButtonGroup,
+  Divider,
+  alpha,
+  useTheme,
+  Badge
+} from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PeopleIcon from '@mui/icons-material/People';
-import AddIcon from '@mui/icons-material/Add'; // Import Add Icon
+import AddIcon from '@mui/icons-material/Add';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 const STATUSES = [
-  { label: 'All', value: '' },
+  { label: 'All Statuses', value: '' },
   { label: 'Open', value: 'Open' },
   { label: 'In Progress', value: 'In Progress' },
   { label: 'Escalated', value: 'Escalated' },
   { label: 'Closed', value: 'Closed' }
 ];
 
-const TicketHeader = ({
-  currentView,
-  onViewChange,
-  title,
-  onFilterChange,
-  onMobileTeamListToggle,
-  onAddTicketClick // New prop for handling the Add Ticket button
-}) => {
+const TicketHeader = ({ currentView, onViewChange, title, onFilterChange, onAddTicketClick }) => {
+  const theme = useTheme();
   const [filters, setFilters] = useState({
     status: '',
     startDate: null,
@@ -33,12 +44,10 @@ const TicketHeader = ({
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
-    const defaultFilters = { status: '', startDate: null, endDate: null };
-    setIsDirty(
-      filters.status !== defaultFilters.status ||
-        filters.startDate?.toString() !== defaultFilters.startDate?.toString() ||
-        filters.endDate?.toString() !== defaultFilters.endDate?.toString()
-    );
+    const hasStatus = filters.status !== '';
+    const hasStart = filters.startDate !== null;
+    const hasEnd = filters.endDate !== null;
+    setIsDirty(hasStatus || hasStart || hasEnd);
   }, [filters]);
 
   const handleApplyFilters = () => {
@@ -55,64 +64,78 @@ const TicketHeader = ({
     <Box
       sx={{
         display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: { xs: 'center', sm: 'space-between' },
+        flexDirection: { xs: 'column', md: 'row' },
+        alignItems: { xs: 'flex-start', md: 'center' },
+        justifyContent: 'space-between',
         gap: 2,
-        bgcolor: 'background.paper',
-        p: 2,
-        borderRadius: 2,
-        boxShadow: '0 3px 10px rgb(0 0 0 / 0.1)'
+        p: 1
       }}
     >
-      {/* Title */}
-      <Typography variant="h5" sx={{ fontWeight: '700', flexShrink: 0 }}>
-        {title}
-      </Typography>
+      {/* Left Section: Title & View Switcher */}
+      <Stack direction="row" spacing={3} alignItems="center">
+        <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: -0.5 }}>
+          {title}
+        </Typography>
 
-      {/* View Toggle and Filters (Consolidated) */}
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems="center" flexGrow={1} justifyContent="flex-end">
-        {/* Add Ticket Button */}
-        <Tooltip title="Add Ticket">
-          <IconButton
-            onClick={onAddTicketClick} // Trigger the Add Ticket click handler
-            color="primary"
-          >
-            <AddIcon />
-          </IconButton>
-        </Tooltip>
-        {/* View Toggle Buttons */}
-        <Stack direction="row" spacing={1} sx={{ mr: 2 }}>
-          <Tooltip title="Switch to Status View">
-            <Button
-              variant={currentView === 'status' ? 'contained' : 'outlined'}
-              onClick={() => onViewChange('status')}
-              startIcon={<FilterAltIcon />}
-              size="small"
-            >
-              Status
-            </Button>
-          </Tooltip>
-          <Tooltip title="Switch to User View">
-            <Button
-              variant={currentView === 'user' ? 'contained' : 'outlined'}
-              onClick={() => onViewChange('user')}
-              startIcon={<PeopleIcon />}
-              size="small"
-            >
-              User
-            </Button>
-          </Tooltip>
-        </Stack>
+        <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: 'center' }} />
 
-        {/* Filters */}
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel id="filter-status-label">Status</InputLabel>
+        <ToggleButtonGroup
+          value={currentView}
+          exclusive
+          onChange={(e, val) => val && onViewChange(val)}
+          size="small"
+          sx={{
+            bgcolor: alpha(theme.palette.primary.main, 0.05),
+            '& .MuiToggleButton-root': {
+              px: 2,
+              border: 'none',
+              borderRadius: '8px !important',
+              mx: 0.5,
+              textTransform: 'none',
+              fontWeight: 600,
+              '&.Mui-selected': {
+                bgcolor: '#fff',
+                boxShadow: '0px 2px 4px rgba(0,0,0,0.1)',
+                color: 'primary.main',
+                '&:hover': { bgcolor: '#fff' }
+              }
+            }
+          }}
+        >
+          <ToggleButton value="status">
+            <DashboardIcon sx={{ fontSize: 18, mr: 1 }} /> Status
+          </ToggleButton>
+          <ToggleButton value="user">
+            <PeopleIcon sx={{ fontSize: 18, mr: 1 }} /> Team
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Stack>
+
+      {/* Right Section: Filters & Actions */}
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems="center" sx={{ width: { xs: '100%', md: 'auto' } }}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <Stack direction="row" spacing={1} sx={{ bgcolor: alpha(theme.palette.grey[100], 0.5), p: 0.5, borderRadius: '10px' }}>
+            <DatePicker
+              label="From"
+              value={filters.startDate}
+              onChange={(v) => setFilters((p) => ({ ...p, startDate: v }))}
+              slotProps={{ textField: { size: 'small', variant: 'standard', sx: { width: 110, px: 1 } } }}
+            />
+            <DatePicker
+              label="To"
+              value={filters.endDate}
+              onChange={(v) => setFilters((p) => ({ ...p, endDate: v }))}
+              slotProps={{ textField: { size: 'small', variant: 'standard', sx: { width: 110, px: 1 } } }}
+            />
+          </Stack>
+        </LocalizationProvider>
+
+        <FormControl size="small" sx={{ minWidth: 140 }}>
           <Select
-            labelId="filter-status-label"
             value={filters.status}
-            label="Status"
-            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+            displayEmpty
+            onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}
+            sx={{ borderRadius: '10px', bgcolor: alpha(theme.palette.grey[100], 0.5) }}
           >
             {STATUSES.map(({ label, value }) => (
               <MenuItem key={value || 'all'} value={value}>
@@ -122,57 +145,46 @@ const TicketHeader = ({
           </Select>
         </FormControl>
 
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker
-            label="From Date"
-            value={filters.startDate}
-            onChange={(newValue) => setFilters((prev) => ({ ...prev, startDate: newValue }))}
-            slotProps={{ textField: { size: 'small', sx: { maxWidth: 150 } } }}
-            maxDate={filters.endDate || undefined}
-          />
-          <DatePicker
-            label="To Date"
-            value={filters.endDate}
-            onChange={(newValue) => setFilters((prev) => ({ ...prev, endDate: newValue }))}
-            slotProps={{ textField: { size: 'small', sx: { maxWidth: 150 } } }}
-            minDate={filters.startDate || undefined}
-          />
-        </LocalizationProvider>
-
-        {/* <Tooltip title="Apply Filters">
-                    <IconButton
-                        onClick={handleApplyFilters}
-                        disabled={!isDirty}
-                        aria-label="Apply filters"
-                    >
-                        <FilterAltIcon color={isDirty ? 'primary' : 'inherit'} />
-                    </IconButton>
-                </Tooltip> */}
-
-        <Tooltip title="Apply Filters">
-          <span>
-            <IconButton onClick={handleApplyFilters} disabled={!isDirty} aria-label="Apply filters">
-              <FilterAltIcon color={isDirty ? 'primary' : 'inherit'} />
+        <Stack direction="row" spacing={0.5}>
+          <Tooltip title="Apply Filters">
+            <IconButton
+              onClick={handleApplyFilters}
+              disabled={!isDirty}
+              sx={{
+                bgcolor: isDirty ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                color: isDirty ? 'primary.main' : 'inherit'
+              }}
+            >
+              <Badge color="error" variant="dot" invisible={!isDirty}>
+                <FilterAltIcon fontSize="small" />
+              </Badge>
             </IconButton>
-          </span>
-        </Tooltip>
+          </Tooltip>
 
-        {/* <Tooltip title="Reset Filters">
-                    <IconButton
-                        onClick={handleResetFilters}
-                        disabled={!isDirty}
-                        aria-label="Reset filters"
-                    >
-                        <RefreshIcon color={isDirty ? 'inherit' : 'disabled'} />
-                    </IconButton>
-                </Tooltip> */}
-        <Tooltip title="Reset Filters">
-          <span>
-            <IconButton onClick={handleResetFilters} disabled={!isDirty} aria-label="Reset filters">
-              <RefreshIcon color={isDirty ? 'inherit' : 'disabled'} />
+          <Tooltip title="Reset">
+            <IconButton onClick={handleResetFilters} disabled={!isDirty}>
+              <RefreshIcon fontSize="small" />
             </IconButton>
-          </span>
-        </Tooltip>
+          </Tooltip>
+        </Stack>
+
+        <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: 'center', display: { xs: 'none', sm: 'block' } }} />
+
+        <Button
+          variant="contained"
+          disableElevation
+          startIcon={<AddIcon />}
+          onClick={onAddTicketClick}
+          sx={{
+            borderRadius: '10px',
+            textTransform: 'none',
+            fontWeight: 700,
+            px: 2,
+            height: 40
+          }}
+        >
+          New Ticket
+        </Button>
       </Stack>
     </Box>
   );

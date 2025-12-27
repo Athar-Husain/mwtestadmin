@@ -1,21 +1,42 @@
 // src/views/TicketDetail/Index.jsx
 import React, { useEffect, useState, useCallback } from 'react';
-import { Box, Grid, CircularProgress, Paper, Typography, Button, Chip, Divider, useTheme } from '@mui/material';
+import {
+  Box,
+  Grid,
+  CircularProgress,
+  Paper,
+  Typography,
+  Button,
+  Chip,
+  Divider,
+  useTheme,
+  alpha,
+  IconButton,
+  Stack,
+  Tabs,
+  Tab
+} from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Assignment, Close as CloseIcon, Autorenew } from '@mui/icons-material';
+import dayjs from 'dayjs';
+// import Assignment from '@mui/icons-material/History';
 
 import TicketInfoPanel from './TicketInfoPanel';
 import AssignmentHistory from './AssignmentHistory';
-import CommentSection from './CommentSection';
 import CloseTicketModal from './CloseTicketModal';
+import PublicCommentSection from './PublicCommentSection';
+import PrivateCommentSection from './PrivateCommentSection';
+import TicketHeader from './TicketHeader';
 
+// import { motion, AnimatePresence } from 'framer-motion';
 import {
   getTicketById,
   getPublicComments,
   addPublicComment,
   addPrivateComment,
+  getPrivateComments,
   resolveTicket
 } from '../../redux/features/Tickets/TicketSlice';
 
@@ -26,20 +47,32 @@ const Index = () => {
   const dispatch = useDispatch();
   const { ticketId } = useParams();
 
-  const { ticket, isTicketLoading, publicComments } = useSelector((s) => s.ticket);
+  const { ticket, isTicketLoading, publicComments, privateComments } = useSelector((s) => s.ticket);
   const currentUser = useSelector((s) => s.admin.Admin);
 
+  const [activeTab, setActiveTab] = useState(0);
   const [closeModalOpen, setCloseModalOpen] = useState(false);
   const [reassignOpen, setReassignOpen] = useState(false); // future modal/drawer
-
   const isClosedOrResolved = ['closed', 'resolved'].includes(ticket?.status?.toLowerCase());
 
   useEffect(() => {
     if (ticketId) {
       dispatch(getTicketById(ticketId));
       dispatch(getPublicComments(ticketId));
+      dispatch(getPrivateComments(ticketId));
     }
   }, [dispatch, ticketId]);
+
+  // Helper to get sophisticated status colors
+  const getStatusConfig = (status) => {
+    const s = status?.toLowerCase();
+    if (s === 'open') return { color: 'success', label: 'Open' };
+    if (s === 'in-progress') return { color: 'warning', label: 'In Progress' };
+    if (s === 'escalated') return { color: 'error', label: 'Escalated' };
+    if (s === 'closed' || s === 'resolved') return { color: 'info', label: 'Closed' };
+    return { color: 'default', label: status || 'Unknown' };
+  };
+  const statusConfig = getStatusConfig(ticket?.status);
 
   const handleSendPublic = useCallback(
     (content) => {
@@ -59,6 +92,8 @@ const Index = () => {
 
   const handleOpenCloseModal = () => setCloseModalOpen(true);
   const handleCloseCloseModal = () => setCloseModalOpen(false);
+  const handleReassignClick = () => setReassignOpen(true);
+
   const handleConfirmCloseTicket = (resolutionNote) => {
     dispatch(resolveTicket({ id: ticketId, data: { resolutionMessage: resolutionNote } }));
     setCloseModalOpen(false);
@@ -75,72 +110,69 @@ const Index = () => {
   return (
     <PageContainer>
       {/* HEADER */}
-      <Paper
-        elevation={4}
-        sx={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-          p: 2,
-          borderRadius: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2,
-          backgroundColor: theme.palette.background.paper
-        }}
-      >
-        <Box>
-          <Typography variant="subtitle2" color="text.secondary">
-            Ticket ID: #{ticket?._id}
-          </Typography>
-          <Typography variant="h6" fontWeight={600}>
-            {ticket?.subject || 'Untitled Ticket'}
-          </Typography>
-        </Box>
-
-        <Box display="flex" alignItems="center" gap={2}>
-          <Chip
-            label={ticket?.status?.toUpperCase() || 'UNKNOWN'}
-            color={ticket?.status === 'open' ? 'success' : ticket?.status === 'in-progress' ? 'warning' : 'default'}
-            variant="filled"
-          />
-          <Divider orientation="vertical" flexItem />
-          <Button variant="outlined" startIcon={<Assignment />} onClick={() => setReassignOpen(true)} disabled={isClosedOrResolved}>
-            Reassign
-          </Button>
-          <Button variant="contained" color="error" startIcon={<CloseIcon />} onClick={handleOpenCloseModal} disabled={isClosedOrResolved}>
-            Close Ticket
-          </Button>
-        </Box>
-      </Paper>
+      <TicketHeader
+        ticket={ticket}
+        onCloseTicket={handleOpenCloseModal}
+        onReassign={handleReassignClick}
+        isClosedOrResolved={isClosedOrResolved}
+      />
 
       {/* BODY */}
       <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28 }}>
         <Grid container spacing={2}>
-          {/* LEFT: Ticket info + assignment history */}
           <Grid size={{ xs: 12, md: 4 }}>
-            <Box display="flex" flexDirection="column" gap={2} height="100%">
-              <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                <TicketInfoPanel ticket={ticket} onCloseClick={handleOpenCloseModal} currentUser={currentUser} />
-              </Paper>
-
-              <Paper
-                elevation={1}
+            <Paper
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                border: `1px solid ${theme.palette.divider}`,
+                height: '80vh',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                bgcolor: 'background.paper'
+              }}
+            >
+              <Tabs
+                value={activeTab}
+                onChange={(e, v) => setActiveTab(v)}
+                variant="fullWidth"
                 sx={{
-                  borderRadius: 2,
-                  p: 2,
-                  flex: 1,
-                  overflowY: 'auto',
-                  minHeight: 300
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  '& .MuiTab-root': { fontWeight: 600, fontSize: '0.85rem' }
                 }}
               >
-                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1, color: theme.palette.text.primary }}>
-                  Assignment History
-                </Typography>
-                <AssignmentHistory ticket={ticket} />
-              </Paper>
-            </Box>
+                <Tab icon={<Autorenew sx={{ fontSize: 18 }} />} iconPosition="start" label="Ticket Details" />
+                <Tab icon={<Assignment sx={{ fontSize: 18 }} />} iconPosition="start" label="Audit Logs" />
+              </Tabs>
+
+              <Box sx={{ flex: 1, overflowY: 'auto', p: 0 }}>
+                <AnimatePresence mode="wait">
+                  {activeTab === 0 ? (
+                    <motion.div
+                      key="info"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <TicketInfoPanel ticket={ticket} onCloseClick={handleOpenCloseModal} currentUser={currentUser} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="history"
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.2 }}
+                      style={{ padding: '10px' }}
+                    >
+                      <AssignmentHistory ticket={ticket} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Box>
+            </Paper>
           </Grid>
 
           {/* MIDDLE: Public chat */}
@@ -149,15 +181,13 @@ const Index = () => {
               elevation={3}
               sx={{
                 borderRadius: 2,
-                height: '100%',
+                height: '80vh',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden'
               }}
             >
-              <CommentSection
-                title="Customer Chat"
-                isPrivate={false}
+              <PublicCommentSection
                 messages={publicComments || []}
                 onSend={handleSendPublic}
                 ticket={ticket}
@@ -173,21 +203,17 @@ const Index = () => {
               elevation={3}
               sx={{
                 borderRadius: 2,
-                height: '100%',
+                height: '80vh',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden'
               }}
             >
-              <CommentSection
-                title="Internal Notes"
-                isPrivate
-                messages={ticket?.privateComments || []}
-                onSend={handleSendPrivate}
-                ticket={ticket}
+              <PrivateCommentSection
+                messages={privateComments || []}
                 currentUser={currentUser}
+                onSend={handleSendPrivate}
                 disabled={isClosedOrResolved}
-                privateAccent
               />
             </Paper>
           </Grid>

@@ -1,3 +1,4 @@
+// src/views/Profile?Index.jsx
 import React from 'react';
 import {
     Container,
@@ -13,6 +14,7 @@ import { useForm } from 'react-hook-form';
 // import Breadcrumbs from 'component/Breadcrumb';
 
 import Breadcrumbs from '../../component/Breadcrumb'
+import { useSelector } from 'react-redux';
 
 const dummyData = {
     name: 'John Doe',
@@ -27,6 +29,10 @@ const dummyData = {
 
 const index = () => {
 
+    
+  const { Admin, isLoading } = useSelector((state) => state.Admin);
+
+  
     const {
         register,
         handleSubmit,

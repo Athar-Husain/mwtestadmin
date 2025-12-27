@@ -121,6 +121,7 @@ const customerSlice = createSlice({
       state.isError = false;
       state.message = '';
       state.customer = null;
+      state.newCustomer = null;
       state.searchedCustomer = null;
     }
   },

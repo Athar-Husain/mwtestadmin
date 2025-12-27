@@ -1,231 +1,128 @@
-import React from 'react';
-
-// material-ui
-import { useTheme } from '@mui/material/styles';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Box,
+  Typography,
+  IconButton,
   Button,
-  Chip,
+  Popper,
+  Paper,
   ClickAwayListener,
   Fade,
-  Grid,
-  Paper,
-  Popper,
-  Avatar,
   List,
-  ListItemAvatar,
   ListItemText,
-  ListSubheader,
-  ListItemSecondaryAction,
-  Typography,
-  ListItemButton
+  ListItemButton,
+  CircularProgress,
+  Badge,
+  ListItemIcon,
+  Stack
 } from '@mui/material';
-
-// third party
-import PerfectScrollbar from 'react-perfect-scrollbar';
-
-// assets
-import QueryBuilderTwoToneIcon from '@mui/icons-material/QueryBuilderTwoTone';
 import NotificationsNoneTwoToneIcon from '@mui/icons-material/NotificationsNoneTwoTone';
+import InfoIcon from '@mui/icons-material/Info';
+import WarningIcon from '@mui/icons-material/Warning';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getNotifications, markAsRead, clearBadge } from '../../../../redux/features/Notifications/NotificationSlice';
 
-import User1 from '../../../../assets/images/users/avatar-1.jpg';
-import User2 from '../../../../assets/images/users/avatar-2.jpg';
-import User3 from '../../../../assets/images/users/avatar-3.jpg';
-import User4 from '../../../../assets/images/users/avatar-4.jpg';
-
-// ==============================|| NOTIFICATION ||============================== //
+const iconMap = {
+  info: <InfoIcon color="info" />,
+  warning: <WarningIcon color="warning" />,
+  success: <CheckCircleIcon color="success" />
+};
 
 const NotificationSection = () => {
-  const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
-  const anchorRef = React.useRef(null);
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef(null);
+  const dispatch = useDispatch();
+
+  const { notifications, isNotificationLoading, hasSeenTray } = useSelector((state) => state.notifications);
+
+  // Logical Badge Count: Only show if tray hasn't been "seen"
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const badgeContent = hasSeenTray ? 0 : unreadCount;
+
+  useEffect(() => {
+    dispatch(getNotifications());
+  }, [dispatch]);
 
   const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
+    setOpen((prev) => {
+      if (!prev) dispatch(clearBadge()); // Clear badge when opening
+      return !prev;
+    });
   };
 
   const handleClose = (event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) {
-      return;
-    }
+    if (anchorRef.current && anchorRef.current.contains(event.target)) return;
     setOpen(false);
   };
 
-  const prevOpen = React.useRef(open);
-  React.useEffect(() => {
-    if (prevOpen.current === true && open === false) {
-      anchorRef.current.focus();
-    }
-    prevOpen.current = open;
-  }, [open]);
+  const handleRead = (id) => {
+    dispatch(markAsRead(id));
+  };
 
   return (
     <>
-      <Button
-        sx={{
-          minWidth: { sm: 50, xs: 35 }
-        }}
-        ref={anchorRef}
-        aria-controls={open ? 'menu-list-grow' : undefined}
-        aria-haspopup="true"
-        aria-label="Notification"
-        onClick={handleToggle}
-        color="inherit"
-      >
-        <NotificationsNoneTwoToneIcon sx={{ fontSize: '1.5rem' }} />
-      </Button>
-      <Popper
-        placement="bottom-end"
-        open={open}
-        anchorEl={anchorRef.current}
-        role={undefined}
-        transition
-        disablePortal
-        modifiers={[
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 10]
-            }
-          },
-          {
-            name: 'preventOverflow',
-            options: {
-              altAxis: true // false by default
-            }
-          }
-        ]}
-      >
+      <IconButton ref={anchorRef} onClick={handleToggle} color="inherit" size="large">
+        <Badge badgeContent={badgeContent > 99 ? '99+' : badgeContent} color="error">
+          <NotificationsNoneTwoToneIcon />
+        </Badge>
+      </IconButton>
+
+      <Popper open={open} anchorEl={anchorRef.current} transition placement="bottom-end" disablePortal sx={{ zIndex: 1300 }}>
         {({ TransitionProps }) => (
-          <Fade {...TransitionProps}>
-            <Paper>
+          <Fade {...TransitionProps} timeout={200}>
+            <Paper sx={{ width: 360, maxHeight: 500, overflowY: 'auto', mt: 1, boxShadow: 3 }}>
               <ClickAwayListener onClickAway={handleClose}>
-                <List
-                  sx={{
-                    width: '100%',
-                    maxWidth: 350,
-                    minWidth: 250,
-                    backgroundColor: theme.palette.background.paper,
-                    pb: 0,
-                    borderRadius: '10px'
-                  }}
-                >
-                  <PerfectScrollbar style={{ height: 320, overflowX: 'hidden' }}>
-                    <ListSubheader disableSticky>
-                      <Chip size="small" color="primary" label="New" />
-                    </ListSubheader>
-                    <ListItemButton alignItems="flex-start" sx={{ pt: 0 }}>
-                      <ListItemAvatar>
-                        <Avatar alt="John Doe" src={User1} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={<Typography variant="subtitle1">John Doe</Typography>}
-                        secondary={<Typography variant="subtitle2">New ticket Added</Typography>}
-                      />
-                      <ListItemSecondaryAction sx={{ top: 22 }}>
-                        <Grid container justifyContent="flex-end">
-                          <Grid item>
-                            <QueryBuilderTwoToneIcon
-                              sx={{
-                                fontSize: '0.75rem',
-                                mr: 0.5,
-                                color: theme.palette.grey[400]
-                              }}
-                            />
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="caption" display="block" gutterBottom sx={{ color: theme.palette.grey[400] }}>
-                              now
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
-                    <ListSubheader disableSticky>
-                      <Chip size="small" variant="outlined" label="EARLIER" />
-                    </ListSubheader>
-                    <ListItemButton alignItems="flex-start" sx={{ pt: 0 }}>
-                      <ListItemAvatar>
-                        <Avatar alt="Joseph William" src={User2} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={<Typography variant="subtitle1">Joseph William</Typography>}
-                        secondary={<Typography variant="subtitle2">Purchase a new product</Typography>}
-                      />
-                      <ListItemSecondaryAction sx={{ top: 20 }}>
-                        <Grid container justifyContent="flex-end">
-                          <Grid item>
-                            <QueryBuilderTwoToneIcon
-                              sx={{
-                                fontSize: '0.75rem',
-                                mr: 0.5,
-                                color: theme.palette.grey[400]
-                              }}
-                            />
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="caption" display="block" gutterBottom sx={{ color: theme.palette.grey[400] }}>
-                              10 min
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
-                    <ListItemButton alignItems="flex-start">
-                      <ListItemAvatar>
-                        <Avatar alt="Sara Soudein" src={User3} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={<Typography variant="subtitle1">Sara Soudein</Typography>}
-                        secondary={<Typography variant="subtitle2">Currently Login</Typography>}
-                      />
-                      <ListItemSecondaryAction sx={{ top: 30 }}>
-                        <Grid container justifyContent="flex-end">
-                          <Grid item>
-                            <QueryBuilderTwoToneIcon
-                              sx={{
-                                fontSize: '0.75rem',
-                                mr: 0.5,
-                                color: theme.palette.grey[400]
-                              }}
-                            />
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="caption" display="block" gutterBottom sx={{ color: theme.palette.grey[400] }}>
-                              12 min
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
-                    <ListItemButton alignItems="flex-start">
-                      <ListItemAvatar>
-                        <Avatar alt="Sepha Wilon" src={User4} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={<Typography variant="subtitle1">Sepha Wilon</Typography>}
-                        secondary={<Typography variant="subtitle2">Purchase a new product</Typography>}
-                      />
-                      <ListItemSecondaryAction sx={{ top: 30 }}>
-                        <Grid container justifyContent="flex-end">
-                          <Grid item>
-                            <QueryBuilderTwoToneIcon
-                              sx={{
-                                fontSize: '0.75rem',
-                                mr: 0.5,
-                                color: theme.palette.grey[400]
-                              }}
-                            />
-                          </Grid>
-                          <Grid item>
-                            <Typography variant="caption" display="block" gutterBottom sx={{ color: theme.palette.grey[400] }}>
-                              30 min
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
-                  </PerfectScrollbar>
-                </List>
+                <Box>
+                  <Typography variant="h6" px={2} pt={2}>
+                    Notifications
+                  </Typography>
+
+                  {isNotificationLoading && notifications.length === 0 ? (
+                    <Box px={2} py={3} display="flex" justifyContent="center">
+                      <CircularProgress size={24} />
+                    </Box>
+                  ) : (
+                    <List>
+                      {notifications.slice(0, 5).map((n) => (
+                        <ListItemButton
+                          key={n._id}
+                          onClick={() => handleRead(n._id)}
+                          sx={{
+                            bgcolor: n.isRead ? 'transparent' : 'action.hover',
+                            borderLeft: n.isRead ? '4px solid transparent' : '4px solid',
+                            borderColor: 'primary.main',
+                            py: 1.5
+                          }}
+                        >
+                          <ListItemIcon>{iconMap[n.type] || iconMap.info}</ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <Typography fontWeight={n.isRead ? 400 : 600} variant="subtitle2" noWrap>
+                                {n.title}
+                              </Typography>
+                            }
+                            secondary={
+                              <Typography variant="caption" color="text.secondary" noWrap>
+                                {n.message}
+                              </Typography>
+                            }
+                          />
+                          <Typography variant="caption" sx={{ ml: 1, whiteSpace: 'nowrap' }}>
+                            {n.createdAt ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }) : ''}
+                          </Typography>
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  )}
+                  <Box textAlign="center" py={1} borderTop="1px solid" borderColor="divider">
+                    <Button component={Link} to="/notifications" size="small" fullWidth onClick={() => setOpen(false)}>
+                      View All
+                    </Button>
+                  </Box>
+                </Box>
               </ClickAwayListener>
             </Paper>
           </Fade>

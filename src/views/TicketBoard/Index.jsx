@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext } from '@hello-pangea/dnd';
-import { Box, Grid, CircularProgress, Drawer } from '@mui/material';
+import { Box, Skeleton, Drawer, useTheme, Fade, Stack } from '@mui/material';
 import dayjs from 'dayjs';
 
 import AddTicket from './AddTicket';
@@ -12,10 +12,11 @@ import UserBoard from './UserBoard';
 import TicketHeader from './TicketHeader';
 import TeamList from './TeamList';
 import ReassignDialog from './ReassignDialog';
-// import ReassignDialog from '../../components/Tickets/ReassignDialog';
 
 const TicketBoard = () => {
+  const theme = useTheme();
   const dispatch = useDispatch();
+
   const { allTickets, isTicketLoading } = useSelector((state) => state.ticket);
   const { teamMembers, isTeamLoading } = useSelector((state) => state.team);
 
@@ -30,7 +31,6 @@ const TicketBoard = () => {
     endDate: null
   });
 
-  // 🧠 New state for reassignment dialog
   const [reassignDialogOpen, setReassignDialogOpen] = useState(false);
   const [pendingReassign, setPendingReassign] = useState(null);
 
@@ -51,7 +51,6 @@ const TicketBoard = () => {
     });
   }, [allTickets, filters, selectedUserId]);
 
-  // 🧩 Handle Drag Drop
   const handleOnDragEnd = (result) => {
     const { source, destination, draggableId } = result;
     if (!destination) return;
@@ -70,12 +69,11 @@ const TicketBoard = () => {
       const newAssignedTo = destination.droppableId;
       if (movedTicket.assignedTo?._id === newAssignedTo) return;
 
-      const fromUser = movedTicket.assignedTo?.name || 'Unassigned';
-      const toUser = teamMembers.find((user) => user._id === newAssignedTo)?.name;
+      const fromUser = movedTicket.assignedTo?.firstName || 'Unassigned';
+      const toUser = teamMembers.find((user) => user._id === newAssignedTo)?.firstName;
       const user = teamMembers.find((user) => user._id === newAssignedTo);
       const newAssignedToModel = user?.userType || 'Team';
 
-      // 🟢 Open dialog before confirming reassignment
       setPendingReassign({
         id: draggableId,
         fromUser,
@@ -87,116 +85,100 @@ const TicketBoard = () => {
     }
   };
 
-  // 🧠 Handle Confirm from Dialog
   const handleConfirmReassign = async (reason) => {
     if (!pendingReassign) return;
     const { id, newAssignedTo, newAssignedToModel } = pendingReassign;
-
-    dispatch(
-      optimisticUpdateTicket({
-        ticketId: id,
-        newAssignedTo,
-        newAssignedToModel
-      })
-    );
-
-    await dispatch(
-      assignTicket({
-        id,
-        data: { newAssignedTo, newAssignedToModel, reason }
-      })
-    );
-
+    dispatch(optimisticUpdateTicket({ ticketId: id, newAssignedTo, newAssignedToModel }));
+    await dispatch(assignTicket({ id, data: { newAssignedTo, newAssignedToModel, reason } }));
     setReassignDialogOpen(false);
     setPendingReassign(null);
     dispatch(getAllTickets());
   };
 
-  const handleAddTicketClick = () => setOpenAddTicket(true);
-  const handleCloseAddTicketModal = () => setOpenAddTicket(false);
-
-  if (isTeamLoading || isTicketLoading) return <CircularProgress />;
-
   return (
-    <>
+    <Box sx={{ bgcolor: '#F8FAFC', height: '100vh', display: 'flex', overflow: 'hidden' }}>
       <DragDropContext onDragEnd={handleOnDragEnd}>
+        {/* Mobile Sidebar */}
         <Drawer
           anchor="left"
           open={mobileTeamListOpen}
           onClose={() => setMobileTeamListOpen(false)}
           sx={{ display: { xs: 'block', md: 'none' } }}
         >
-          <Box sx={{ width: 200, p: 2 }}>
-            <TeamList
-              users={teamMembers}
-              allTickets={allTickets}
-              selectedUserId={selectedUserId}
-              onSelectUser={(id) => {
-                setSelectedUserId((prev) => (prev === id ? null : id));
-                setMobileTeamListOpen(false);
-              }}
-            />
-          </Box>
+          <TeamList
+            users={teamMembers}
+            allTickets={allTickets}
+            selectedUserId={selectedUserId}
+            onSelectUser={(id) => {
+              setSelectedUserId((prev) => (prev === id ? null : id));
+              setMobileTeamListOpen(false);
+            }}
+          />
         </Drawer>
 
-        <Grid container sx={{ height: '100vh', overflow: 'hidden', flexWrap: 'nowrap' }}>
-          <Grid
-            size={{ xs: 12, md: 3, lg: 2 }}
+        {/* Desktop Sidebar (Resizes automatically) */}
+        <Box sx={{ display: { xs: 'none', md: 'block' }, height: '100%' }}>
+          <TeamList
+            users={teamMembers}
+            allTickets={allTickets}
+            selectedUserId={selectedUserId}
+            onSelectUser={(id) => setSelectedUserId((prev) => (prev === id ? null : id))}
+          />
+        </Box>
+
+        {/* Main Board Area */}
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 0, // Critical for horizontal scrolling in flex children
+            bgcolor: '#F1F5F9'
+          }}
+        >
+          {/* Header */}
+          <Box
             sx={{
-              borderRight: '1px solid #ccc',
-              overflowY: 'auto',
-              display: { xs: 'none', md: 'block' }
+              p: 2,
+              bgcolor: 'background.paper',
+              borderBottom: `1px solid ${theme.palette.divider}`
             }}
           >
-            <TeamList
-              users={teamMembers}
-              allTickets={allTickets}
-              selectedUserId={selectedUserId}
-              onSelectUser={(id) => setSelectedUserId((prev) => (prev === id ? null : id))}
+            <TicketHeader
+              title="Ticket Board"
+              currentView={currentView}
+              onViewChange={setCurrentView}
+              onMobileTeamListToggle={() => setMobileTeamListOpen(true)}
+              onFilterChange={setFilters}
+              onAddTicketClick={() => setOpenAddTicket(true)}
             />
-          </Grid>
+          </Box>
 
-          <Grid
-            size={{ xs: 12, md: 9, lg: 10 }}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              width: '100%'
-            }}
-          >
-            <Box sx={{ p: 2, borderBottom: '1px solid #ccc' }}>
-              <TicketHeader
-                title="Ticket Board"
-                currentView={currentView}
-                onViewChange={setCurrentView}
-                onMobileTeamListToggle={() => setMobileTeamListOpen(true)}
-                onFilterChange={setFilters}
-                onAddTicketClick={handleAddTicketClick}
-              />
-            </Box>
+          {/* Board Content */}
+          <Box sx={{ flex: 1, overflowX: 'auto', p: 2 }}>
+            {isTeamLoading || isTicketLoading ? (
+              <Stack direction="row" spacing={2} sx={{ height: '100%' }}>
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} variant="rectangular" width={300} height="100%" sx={{ borderRadius: 3 }} />
+                ))}
+              </Stack>
+            ) : (
+              <Fade in timeout={400}>
+                <Box sx={{ height: '100%', width: '100%' }}>
+                  {currentView === 'status' ? (
+                    <StatusBoard tickets={filteredTickets} statuses={['Open', 'Escalated', 'In Progress', 'Closed']} />
+                  ) : (
+                    <UserBoard users={teamMembers} tickets={filteredTickets} selectedUserId={selectedUserId} />
+                  )}
+                </Box>
+              </Fade>
+            )}
+          </Box>
+        </Box>
 
-            <Box
-              sx={{
-                flex: 1,
-                overflowX: 'auto',
-                display: 'flex',
-                flexDirection: 'row',
-                p: 1
-              }}
-            >
-              {currentView === 'status' ? (
-                <StatusBoard tickets={filteredTickets} statuses={['Open', 'Escalated', 'In Progress', 'Closed']} />
-              ) : (
-                <UserBoard users={teamMembers} tickets={filteredTickets} selectedUserId={selectedUserId} />
-              )}
-            </Box>
-          </Grid>
-        </Grid>
-
-        <AddTicket open={openAddTicket} handleClose={handleCloseAddTicketModal} />
+        <AddTicket open={openAddTicket} handleClose={() => setOpenAddTicket(false)} />
       </DragDropContext>
 
-      {/* 🟢 Reassign Reason Modal */}
       <ReassignDialog
         open={reassignDialogOpen}
         onClose={() => setReassignDialogOpen(false)}
@@ -204,7 +186,7 @@ const TicketBoard = () => {
         fromUser={pendingReassign?.fromUser}
         toUser={pendingReassign?.toUser}
       />
-    </>
+    </Box>
   );
 };
 

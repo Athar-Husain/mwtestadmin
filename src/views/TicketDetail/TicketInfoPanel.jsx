@@ -1,5 +1,5 @@
-// src / views / TicketDetail / TicketInfoPanel.jsx;
-import React, { useMemo, useState, useEffect } from 'react';
+// src/views/TicketDetail/TicketInfoPanel.jsx
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -7,7 +7,6 @@ import {
   Avatar,
   Stack,
   IconButton,
-  Tooltip,
   Button,
   Dialog,
   DialogTitle,
@@ -19,286 +18,377 @@ import {
   InputLabel,
   Divider,
   TextField,
-  FormHelperText
+  Paper,
+  alpha,
+  useTheme,
+  Grid,
+  Tooltip,
+  CircularProgress
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
-import PersonIcon from '@mui/icons-material/Person';
+
+import {
+  EditTwoTone as EditIcon,
+  AccessTime as TimeIcon,
+  PriorityHigh as PriorityIcon,
+  Router as RouterIcon,
+  SettingsInputComponent as STBIcon,
+  Badge as IDIcon,
+  CellTower as ConnectionIcon,
+  ContentCopy as CopyIcon,
+  ConfirmationNumber as TicketIcon,
+  PersonOutline as PersonIcon,
+  CallMade
+} from '@mui/icons-material';
+
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { assignTicket } from '../../redux/features/Tickets/TicketSlice';
 import { getAllTeamMembers } from '../../redux/features/Team/TeamSlice';
 import { toast } from 'react-toastify';
 
-const statusColor = {
-  Open: 'success',
-  'In Progress': 'info',
-  Resolved: 'default',
-  Closed: 'default',
-  escalated: 'warning',
-  Escalated: 'warning'
+dayjs.extend(relativeTime);
+
+/* ---------------- STATUS COLORS ---------------- */
+const statusConfig = {
+  Open: { color: '#10b981', bg: '#ecfdf5' },
+  'In Progress': { color: '#3b82f6', bg: '#eff6ff' },
+  Resolved: { color: '#6366f1', bg: '#f5f3ff' },
+  Closed: { color: '#64748b', bg: '#f8fafc' },
+  Escalated: { color: '#f59e0b', bg: '#fffbeb' }
 };
 
-const priorityLabel = {
-  high: { color: 'error', label: 'High' },
-  medium: { color: 'warning', label: 'Medium' },
-  low: { color: 'default', label: 'Low' }
+/* ---------------- HELPERS ---------------- */
+const getResolutionDuration = (createdAt, resolvedAt) => {
+  if (!createdAt || !resolvedAt) return '—';
+
+  const start = dayjs(createdAt);
+  const end = dayjs(resolvedAt);
+
+  const minutes = end.diff(start, 'minute');
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  return `${minutes}m`;
 };
 
-const TicketInfoPanel = ({ ticket, onCloseClick, currentUser }) => {
+/* ---------------- COMPONENT ---------------- */
+const TicketInfoPanel = ({ ticket, onCloseClick }) => {
+  const theme = useTheme();
   const dispatch = useDispatch();
   const { teamMembers } = useSelector((s) => s.team);
+
   const [reassignOpen, setReassignOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState('');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const isClosedOrResolved = ['closed', 'resolved'].includes(ticket?.status?.toLowerCase());
+
+  const conn = ticket?.connection || {};
+
   useEffect(() => {
-    if (!teamMembers || teamMembers.length === 0) {
+    if (!teamMembers?.length) {
       dispatch(getAllTeamMembers());
     }
   }, [dispatch, teamMembers]);
 
-  const normalizedStatus = ticket?.status?.toLowerCase?.();
-  const isClosedOrResolved = ['closed', 'resolved'].includes(normalizedStatus);
-
-  const assignedName = ticket?.assignedTo
-    ? ticket.assignedTo.firstName
-      ? `${ticket.assignedTo.firstName} ${ticket.assignedTo.lastName || ''}`
-      : ticket.assignedTo._id
-    : 'Unassigned';
-
-  const createdAt = ticket?.createdAt ? dayjs(ticket.createdAt).format('DD MMM YYYY, hh:mm A') : '-';
-  const updatedAt = ticket?.updatedAt ? dayjs(ticket.updatedAt).format('DD MMM YYYY, hh:mm A') : '-';
-
-  const handleOpenReassign = () => {
-    if (isClosedOrResolved) {
-      toast.info('Cannot reassign a closed/resolved ticket.');
-      return;
-    }
-    setSelectedMember(ticket?.assignedTo?._id || '');
-    setNote('');
-    setReassignOpen(true);
+  const handleCopy = (text) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard', { autoClose: 800 });
   };
 
-  const handleCloseReassign = () => setReassignOpen(false);
-
   const handleConfirmReassign = async () => {
-    if (!selectedMember) {
-      toast.error('Select a team member to assign.');
-      return;
+    if (!selectedMember) return toast.error('Please select an agent');
+
+    if (selectedMember === ticket?.assignedTo?._id) {
+      return toast.error('This agent is already assigned');
     }
 
     const member = teamMembers.find((m) => m._id === selectedMember);
-    const newAssignedToModel = member?.userType || 'Team';
 
     try {
       setLoading(true);
       await dispatch(
         assignTicket({
           id: ticket._id,
-          data: { newAssignedTo: selectedMember, newAssignedToModel, note }
+          data: {
+            newAssignedTo: selectedMember,
+            newAssignedToModel: member?.userType || 'Team',
+            note: note.trim() || 'Manual reassignment'
+          }
         })
       ).unwrap();
-      toast.success('Ticket reassigned');
+
+      toast.success(`Assigned to ${member?.firstName}`);
       setReassignOpen(false);
+      setSelectedMember('');
+      setNote('');
     } catch (err) {
-      toast.error(err || 'Failed to reassign');
+      toast.error(err?.message || 'Failed to reassign ticket');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <Box p={2}>
-      {/* ===== HEADER ===== */}
-      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2} mb={1}>
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <Avatar sx={{ bgcolor: 'primary.main' }}>{(ticket?._id || '').toString().slice(-4)}</Avatar>
-          <Box>
-            <Tooltip title={ticket?._id || ''}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }} noWrap>
-                Ticket #{ticket?._id || '—'}
-              </Typography>
-            </Tooltip>
-            <Typography variant="caption" color="text.secondary">
-              {ticket?.issueType ? ticket.issueType : 'General'}
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Stack direction="column" spacing={1.5} alignItems="center">
-          <Chip
-            label={ticket?.status || 'Unknown'}
-            color={statusColor[ticket?.status] || 'default'}
-            size="small"
-            sx={{ fontWeight: 700, textTransform: 'capitalize' }}
-          />
-          <Chip
-            icon={<PriorityHighIcon />}
-            label={priorityLabel[ticket?.priority]?.label || ticket?.priority || 'Low'}
-            color={priorityLabel[ticket?.priority]?.color || 'default'}
-            size="small"
-          />
-          <Tooltip title="Close Ticket">
-            <span>
-              <Button variant="outlined" size="small" onClick={onCloseClick} disabled={isClosedOrResolved}>
-                Close
-              </Button>
-            </span>
+  const PropRow = ({ icon: Icon, label, value, copyable }) => (
+    <Box sx={{ mb: 1 }}>
+      <Typography
+        variant="caption"
+        sx={{
+          fontWeight: 600,
+          color: 'text.disabled',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          mb: 0.3,
+          fontSize: '0.55rem'
+        }}
+      >
+        <Icon sx={{ fontSize: 12 }} /> {label.toUpperCase()}
+      </Typography>
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+          {value || '—'}
+        </Typography>
+        {copyable && value && (
+          <Tooltip title="Copy">
+            <IconButton size="small" sx={{ p: 0.2 }} onClick={() => handleCopy(value)}>
+              <CopyIcon sx={{ fontSize: 12 }} />
+            </IconButton>
           </Tooltip>
+        )}
+      </Stack>
+    </Box>
+  );
+
+  // Filter members so current assignee doesn't show up in list
+  const availableMembers = teamMembers?.filter((m) => m._id !== ticket?.assignedTo?._id) || [];
+
+  return (
+    <Box sx={{ p: 2, bgcolor: 'background.paper', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* HEADER */}
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
+        <Box>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <TicketIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+            <Typography variant="subtitle1" fontWeight={800}>
+              Ticket #{ticket?._id?.slice(-6).toUpperCase()}
+            </Typography>
+          </Stack>
+          <Typography variant="caption" color="text.secondary" sx={{ ml: 3 }}>
+            {ticket?.issueType || 'General'}
+          </Typography>
+        </Box>
+
+        <Stack spacing={0.5} alignItems="flex-end">
+          <Chip
+            size="small"
+            label={ticket?.status?.toUpperCase()}
+            sx={{
+              bgcolor: statusConfig[ticket?.status]?.bg,
+              color: statusConfig[ticket?.status]?.color,
+              fontWeight: 900
+            }}
+          />
+          <Chip size="small" label={ticket?.priority?.toUpperCase()} variant="outlined" icon={<PriorityIcon sx={{ fontSize: 12 }} />} />
         </Stack>
       </Stack>
 
-      <Divider sx={{ my: 1 }} />
+      <Divider sx={{ mb: 2 }} />
 
-      {/* ===== INFO GRID ===== */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-          gap: 2,
-          mb: 2
-        }}
-      >
-        {/* LEFT: CUSTOMER */}
-        <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }} gutterBottom>
-            Customer
-          </Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Avatar>
-              <PersonIcon />
-            </Avatar>
+      {/* BODY */}
+      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+        {/* CUSTOMER */}
+        <Paper sx={{ p: 1.5, mb: 2 }}>
+          <Stack direction="row" spacing={1.5}>
+            <Avatar>{ticket?.customer?.firstName?.[0]}</Avatar>
             <Box>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {ticket?.customer?.firstName
-                  ? `${ticket.customer.firstName} ${ticket.customer.lastName || ''}`
-                  : ticket?.customer?._id || 'N/A'}
+              <Typography fontWeight={700}>
+                {ticket?.customer?.firstName} {ticket?.customer?.lastName}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {ticket?.customer?.phone || ticket?.customer?.email || ''}
-              </Typography>
+              <Typography variant="caption">{ticket?.customer?.phone || 'No Phone'}</Typography>
             </Box>
           </Stack>
-        </Box>
+        </Paper>
 
-        {/* RIGHT: DATES */}
-        <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }} gutterBottom>
-            Timeline
+        {/* CONNECTION */}
+        <Grid container spacing={1} mb={2}>
+          <Grid size={{ xs: 6 }}>
+            <PropRow icon={IDIcon} label="User ID" value={conn?.userId} />
+          </Grid>
+          <Grid size={{ xs: 6 }}>
+            <PropRow icon={RouterIcon} label="Box ID" value={conn?.boxId} />
+          </Grid>
+          <Grid size={{ xs: 6 }}>
+            <PropRow icon={STBIcon} label="STB" value={conn?.stbNumber} />
+          </Grid>
+          <Grid size={{ xs: 6 }}>
+            <PropRow icon={CallMade} label="Contact" value={conn?.contactNo} />
+          </Grid>
+          <Grid size={{ xs: 6 }}>
+            <PropRow icon={ConnectionIcon} label="Service Area" value={conn?.serviceArea?.region} />
+          </Grid>
+        </Grid>
+
+        {/* DESCRIPTION */}
+        <Paper sx={{ p: 1.5, mb: 2 }}>
+          <Typography variant="caption" fontWeight={800}>
+            ISSUE DESCRIPTION
           </Typography>
-          <Stack spacing={0.8}>
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <AccessTimeIcon fontSize="small" />
-              <Typography variant="caption" color="text.secondary">
-                Created: {createdAt}
-              </Typography>
-            </Stack>
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <AccessTimeIcon fontSize="small" />
-              <Typography variant="caption" color="text.secondary">
-                Updated: {updatedAt}
-              </Typography>
-            </Stack>
-          </Stack>
-        </Box>
+          <Typography variant="body2">{ticket?.description}</Typography>
+        </Paper>
+
+        {/* 🔥 RESOLUTION DETAILS (ONLY FOR CLOSED / RESOLVED) */}
+        {isClosedOrResolved && (
+          <Paper
+            sx={{
+              p: 1.5,
+              mb: 2,
+              border: `1px solid ${theme.palette.success.main}`,
+              bgcolor: alpha(theme.palette.success.main, 0.05)
+            }}
+          >
+            <Typography variant="caption" fontWeight={800}>
+              RESOLUTION DETAILS
+            </Typography>
+
+            <Grid container spacing={1} mt={0.5}>
+              <Grid size={{ xs: 6 }}>
+                <PropRow
+                  icon={PersonIcon}
+                  label="Resolved By"
+                  value={`${ticket?.resolvedBy?.firstName || ''} ${ticket?.resolvedBy?.lastName || ''}`}
+                />
+              </Grid>
+              <Grid size={{ xs: 6 }}>
+                <PropRow icon={TimeIcon} label="Resolved At" value={dayjs(ticket?.resolvedAt).format('DD MMM, hh:mm A')} />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <PropRow icon={TimeIcon} label="Resolution Time" value={getResolutionDuration(ticket?.createdAt, ticket?.resolvedAt)} />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <Typography variant="body2" mt={0.5}>
+                  {ticket?.resolutionMessage || 'No resolution message'}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Paper>
+        )}
       </Box>
 
-      <Divider sx={{ my: 1.5 }} />
-
-      {/* ===== CONNECTION & DESCRIPTION ===== */}
-      <Box mb={2}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }} gutterBottom>
-          Connection
-        </Typography>
-        <Typography variant="body2" color="text.secondary" mb={1}>
-          {ticket?.connection ? (typeof ticket.connection === 'object' ? ticket.connection._id || '—' : ticket.connection) : 'N/A'}
-        </Typography>
-
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }} gutterBottom>
-          Description
-        </Typography>
-        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }} mb={2}>
-          {ticket?.description || '—'}
-        </Typography>
-      </Box>
-
-      <Divider sx={{ my: 1.5 }} />
-
-      {/* ===== ASSIGNED TO ===== */}
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }} gutterBottom>
-          Assigned To
-        </Typography>
-        <Stack direction="row" alignItems="center" spacing={1} justifyContent="space-between">
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Avatar sx={{ bgcolor: 'secondary.main', width: 36, height: 36 }}>
-              {ticket?.assignedTo?.firstName ? ticket.assignedTo.firstName.charAt(0).toUpperCase() : 'U'}
-            </Avatar>
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {assignedName}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {ticket?.assignedTo?.role || ticket?.assignedToModel || ''}
-              </Typography>
-            </Box>
-          </Stack>
-
-          <Tooltip title={isClosedOrResolved ? 'Cannot reassign closed/resolved ticket' : 'Reassign ticket'}>
-            <span>
-              <IconButton size="small" onClick={handleOpenReassign} disabled={isClosedOrResolved}>
-                <EditIcon />
-              </IconButton>
-            </span>
+      {/* FOOTER SECTION (ASSIGNMENT) */}
+      <Box sx={{ pt: 2, mt: 'auto', borderTop: `1px solid ${theme.palette.divider}` }}>
+        <Stack direction="row" spacing={1.5} alignItems="center" mb={2}>
+          <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main', fontSize: '0.85rem' }}>
+            <PersonIcon fontSize="small" />
+          </Avatar>
+          <Box flex={1}>
+            <Typography variant="caption" color="text.disabled" fontWeight={700} display="block" sx={{ lineHeight: 1 }}>
+              CURRENT ASSIGNEE
+            </Typography>
+            <Typography variant="body2" fontWeight={700}>
+              {ticket?.assignedTo?.firstName ? `${ticket.assignedTo.firstName} ${ticket.assignedTo.lastName}` : 'Unassigned'}
+            </Typography>
+          </Box>
+          <Tooltip title="Change Assignee">
+            <IconButton
+              size="small"
+              onClick={() => setReassignOpen(true)}
+              disabled={isClosedOrResolved}
+              sx={{ border: `1px solid ${theme.palette.divider}` }}
+            >
+              <EditIcon sx={{ fontSize: 16 }} />
+            </IconButton>
           </Tooltip>
         </Stack>
+
+        <Button
+          fullWidth
+          variant="contained"
+          color="error"
+          size="medium"
+          disabled={isClosedOrResolved}
+          onClick={onCloseClick}
+          sx={{ fontWeight: 700, textTransform: 'none', borderRadius: 2, boxShadow: 'none' }}
+        >
+          {isClosedOrResolved ? 'Ticket Resolved' : 'Resolve Ticket'}
+        </Button>
       </Box>
 
-      {/* ===== REASSIGN DIALOG ===== */}
-      <Dialog open={reassignOpen} onClose={handleCloseReassign} fullWidth maxWidth="sm">
-        <DialogTitle>Reassign Ticket</DialogTitle>
+      {/* REASSIGN DIALOG */}
+      <Dialog
+        open={reassignOpen}
+        onClose={() => !loading && setReassignOpen(false)}
+        fullWidth
+        maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h6" fontWeight={800}>
+            Reassign Ticket
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Select a new team member to handle this case.
+          </Typography>
+        </DialogTitle>
+
         <DialogContent>
-          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-            <InputLabel id="select-team-label">Select Team Member</InputLabel>
-            <Select
-              labelId="select-team-label"
-              value={selectedMember}
-              label="Select Team Member"
-              onChange={(e) => setSelectedMember(e.target.value)}
-            >
-              <MenuItem value="">
-                <em>Unassigned</em>
-              </MenuItem>
-              {(teamMembers || []).map((m) => (
-                <MenuItem key={m._id} value={m._id}>
-                  {m.firstName} {m.lastName ? ` ${m.lastName}` : ''}
-                </MenuItem>
-              ))}
+          <FormControl fullWidth size="small" sx={{ mt: 2, mb: 2 }}>
+            <InputLabel>Select Agent</InputLabel>
+            <Select value={selectedMember} label="Select Agent" onChange={(e) => setSelectedMember(e.target.value)} disabled={loading}>
+              {availableMembers.length > 0 ? (
+                availableMembers.map((m) => (
+                  <MenuItem key={m._id} value={m._id}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Avatar sx={{ width: 20, height: 20, fontSize: '0.6rem' }}>{m.firstName?.[0]}</Avatar>
+                      <Typography variant="body2">
+                        {m.firstName} {m.lastName}
+                      </Typography>
+                    </Stack>
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No other agents available</MenuItem>
+              )}
             </Select>
-            <FormHelperText>Only active team members are shown</FormHelperText>
           </FormControl>
 
           <TextField
-            label="Note (optional)"
-            multiline
-            minRows={3}
-            maxRows={6}
             fullWidth
             size="small"
+            label="Internal Note (Optional)"
+            rows={3}
+            multiline
+            placeholder="Reason for reassignment..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
+            disabled={loading}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseReassign}>Cancel</Button>
-          <Button onClick={handleConfirmReassign} variant="contained" disabled={loading}>
-            {loading ? 'Assigning...' : 'Confirm'}
+
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={() => setReassignOpen(false)} color="inherit" disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleConfirmReassign}
+            disabled={loading || !selectedMember}
+            startIcon={loading && <CircularProgress size={16} color="inherit" />}
+          >
+            {loading ? 'Assigning...' : 'Confirm Assignment'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* FOOTER */}
+      {/* <Button fullWidth variant="contained" color="error" disabled={isClosedOrResolved} onClick={onCloseClick}>
+        {isClosedOrResolved ? 'Ticket Resolved' : 'Resolve Ticket'}
+      </Button> */}
     </Box>
   );
 };

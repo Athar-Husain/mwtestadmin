@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
     TextField,
     FormControl,
@@ -15,57 +15,71 @@ import {
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { useSelector, useDispatch } from 'react-redux';
-
 import { getAllServiceAreas } from '../../redux/features/Area/AreaSlice';
 import { registerTeamMember } from '../../redux/features/Team/TeamSlice';
 
+const DEFAULT_VALUES = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    phone: '',
+    role: 'technician',
+    region: [],
+};
+
 const AddTeam = () => {
     const dispatch = useDispatch();
-    const { areas, isAreaLoading, areaError } = useSelector((state) => state.area);
 
     const {
+        areas = [],
+        isAreaLoading,
+        areaError,
+    } = useSelector((state) => state.area);
+
+    const {
+        isSubmitting,
         control,
         handleSubmit,
+        reset,
         formState: { errors },
-    } = useForm({
-        defaultValues: {
-            firstName: '',
-            lastName: '',
-            email: '',
-            password: '',
-            phone: '',
-            role: 'technician',
-            status: 'active',
-            region: [],
-        },
-    });
+    } = useForm({ defaultValues: DEFAULT_VALUES });
 
-    // Fetch areas on component mount
+    // Fetch service areas
     useEffect(() => {
         dispatch(getAllServiceAreas());
     }, [dispatch]);
 
-    // Remove duplicates from the areas list based on _id (or any unique identifier)
-    const uniqueAreas = areas.filter(
-        (value, index, self) =>
-            index === self.findIndex((t) => t._id === value._id)
-    );
+    // Deduplicate area options
+    const uniqueAreas = useMemo(() => {
+        const seen = new Set();
+        return areas.filter(({ _id }) => {
+            if (seen.has(_id)) return false;
+            seen.add(_id);
+            return true;
+        });
+    }, [areas]);
 
-    const onSubmit = (data) => {
-        // console.log('Form data:', data);
-        dispatch(registerTeamMember(data));
+    // Submit handler
+    const onSubmit = async (data) => {
+        const result = await dispatch(registerTeamMember(data));
+
+        if (registerTeamMember.fulfilled.match(result)) {
+            reset(); // clear form on success
+        }
+
+        // Optional: handle errors (e.g., via toast/snackbar)
     };
 
     return (
-        <Container>
+        <Container maxWidth="md">
             <Box
+                component="section"
                 sx={{
-                    maxWidth: 800,
-                    margin: 'auto',
-                    padding: 4,
-                    bgcolor: 'background.paper',
+                    p: 4,
                     borderRadius: 2,
                     boxShadow: 4,
+                    bgcolor: 'background.paper',
                 }}
             >
                 <Typography variant="h5" fontWeight="bold" mb={3}>
@@ -84,6 +98,7 @@ const AddTeam = () => {
                                     <TextField
                                         {...field}
                                         label="First Name"
+                                        autoComplete="given-name"
                                         fullWidth
                                         error={!!errors.firstName}
                                         helperText={errors.firstName?.message}
@@ -102,6 +117,7 @@ const AddTeam = () => {
                                     <TextField
                                         {...field}
                                         label="Last Name"
+                                        autoComplete="family-name"
                                         fullWidth
                                         error={!!errors.lastName}
                                         helperText={errors.lastName?.message}
@@ -127,6 +143,7 @@ const AddTeam = () => {
                                         {...field}
                                         label="Email"
                                         type="email"
+                                        autoComplete="email"
                                         fullWidth
                                         error={!!errors.email}
                                         helperText={errors.email?.message}
@@ -144,7 +161,7 @@ const AddTeam = () => {
                                     required: 'Password is required',
                                     minLength: {
                                         value: 6,
-                                        message: 'Minimum 6 characters',
+                                        message: 'Minimum 6 characters required',
                                     },
                                 }}
                                 render={({ field }) => (
@@ -152,6 +169,7 @@ const AddTeam = () => {
                                         {...field}
                                         label="Password"
                                         type="password"
+                                        autoComplete="new-password"
                                         fullWidth
                                         error={!!errors.password}
                                         helperText={errors.password?.message}
@@ -160,7 +178,7 @@ const AddTeam = () => {
                             />
                         </Grid>
 
-                        {/* Phone Number (Indian format) */}
+                        {/* Phone */}
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <Controller
                                 name="phone"
@@ -169,7 +187,7 @@ const AddTeam = () => {
                                     required: 'Phone number is required',
                                     pattern: {
                                         value: /^[6-9]\d{9}$/,
-                                        message: 'Invalid phone number. Must be 10 digits starting with 6, 7, 8, or 9.',
+                                        message: 'Invalid Indian phone number',
                                     },
                                 }}
                                 render={({ field }) => (
@@ -180,10 +198,9 @@ const AddTeam = () => {
                                         fullWidth
                                         error={!!errors.phone}
                                         helperText={errors.phone?.message}
-                                        inputProps={{
-                                            maxLength: 10,
-                                        }}
-                                        placeholder="Enter 10-digit number"
+                                        inputProps={{ maxLength: 10 }}
+                                        placeholder="10-digit mobile number"
+                                        autoComplete="tel"
                                     />
                                 )}
                             />
@@ -197,7 +214,11 @@ const AddTeam = () => {
                                 render={({ field }) => (
                                     <FormControl fullWidth>
                                         <InputLabel id="role-label">Role</InputLabel>
-                                        <Select {...field} labelId="role-label" label="Role">
+                                        <Select
+                                            {...field}
+                                            labelId="role-label"
+                                            label="Role"
+                                        >
                                             <MenuItem value="technician">Technician</MenuItem>
                                             <MenuItem value="agent">Agent</MenuItem>
                                         </Select>
@@ -206,7 +227,7 @@ const AddTeam = () => {
                             />
                         </Grid>
 
-                        {/* Regions */}
+                        {/* Region */}
                         <Grid size={{ xs: 12 }}>
                             <Controller
                                 name="region"
@@ -215,25 +236,23 @@ const AddTeam = () => {
                                 render={({ field: { onChange, value }, fieldState }) => (
                                     <Autocomplete
                                         multiple
-                                        options={uniqueAreas || []}  // Use the filtered unique list
+                                        options={uniqueAreas}
                                         loading={isAreaLoading}
                                         value={value}
                                         onChange={(_, newValue) => {
-                                            // Remove duplicate regions from selected values
-                                            const uniqueSelectedRegions = Array.from(
-                                                new Set(newValue.map((item) => item._id))
-                                            ).map((id) => newValue.find((item) => item._id === id));
-
-                                            onChange(uniqueSelectedRegions);
+                                            const unique = Array.from(
+                                                new Map(newValue.map(item => [item._id, item])).values()
+                                            );
+                                            onChange(unique);
                                         }}
                                         getOptionLabel={(option) => option.region}
                                         renderInput={(params) => (
                                             <TextField
                                                 {...params}
                                                 label="Regions"
-                                                placeholder="Select regions"
                                                 error={!!fieldState.error}
                                                 helperText={fieldState.error?.message}
+                                                placeholder="Select regions"
                                                 InputProps={{
                                                     ...params.InputProps,
                                                     endAdornment: (
@@ -252,12 +271,25 @@ const AddTeam = () => {
                             />
                         </Grid>
 
-                        {/* Submit */}
+                        {/* Submit Button */}
                         <Grid size={{ xs: 12 }}>
-                            <Button variant="contained" color="primary" fullWidth type="submit">
-                                Submit
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                type="submit"
+                                fullWidth
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Submitting...' : 'Submit'}
                             </Button>
                         </Grid>
+
+                        {/* Optional Area Error Display */}
+                        {areaError && (
+                            <Grid size={{ xs: 12 }}>
+                                <Typography color="error">{areaError}</Typography>
+                            </Grid>
+                        )}
                     </Grid>
                 </form>
             </Box>
