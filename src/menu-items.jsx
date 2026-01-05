@@ -188,14 +188,14 @@ const menuConfig = {
               title: 'Leads Dashboard',
               type: 'item',
               icon: icons.DashboardOutlinedIcon,
-              url: '/leads/dashboard'
+              url: '/leads'
             },
             {
               id: 'all-leads',
               title: 'All Leads',
               type: 'item',
               icon: icons.ListAltOutlinedIcon,
-              url: '/leads/all'
+              url: '/leads/dashboard'
             },
             {
               id: 'add-lead',
@@ -218,7 +218,7 @@ const menuConfig = {
               type: 'item',
               icon: icons.PeopleAltOutlinedIcon,
               url: '/billing'
-            },
+            }
             // {
             //   id: 'add-billing-customer',
             //   title: 'Add Customer',
@@ -234,7 +234,7 @@ const menuConfig = {
             //   url: '/connections'
             // }
           ]
-        },
+        }
         // {
         //   id: 'projects-boards',
         //   title: 'Project Boards',

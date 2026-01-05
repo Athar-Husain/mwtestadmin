@@ -6,6 +6,7 @@ import Notifications from '../views/Notification/Notification';
 import AllConnections from '../views/Connections/AllConnections';
 import LeadDashboard from '../views/Leads/LeadDashboard';
 import BillingDashboard from '../views/Billings/Index';
+import LeadManagementPanel from '../views/Leads/LeadManagementPanel';
 
 const DashboardDefault = Loadable(lazy(() => import('../views/Dashboard/Default')));
 
@@ -95,6 +96,7 @@ const MainRoutes = [
           // { path: '/connections2', element: <AllConnections2 /> },
 
           { path: '/leads/dashboard', element: <LeadDashboard /> },
+          { path: '/leads', element: <LeadManagementPanel /> },
           // Plan Management
           { path: '/plans', element: <AllPlans /> },
           { path: '/plan/create', element: <CreatePlan /> },

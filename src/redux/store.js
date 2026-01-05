@@ -11,6 +11,7 @@ import customerReducer from './features/Customers/CustomerSlice';
 import connectionReducer from './features/Connection/ConnectionSlice';
 import planReducer from './features/Plan/PlanSlice';
 import ticketReducer from './features/Tickets/TicketSlice';
+import leadReducer from './features/Leads/LeadSlice';
 
 import notificationReducer from './features/Notifications/NotificationSlice';
 
@@ -26,6 +27,7 @@ export const store = configureStore({
     connection: connectionReducer,
     plan: planReducer,
     ticket: ticketReducer,
-    notifications: notificationReducer
+    notifications: notificationReducer,
+    lead: leadReducer
   }
 });
