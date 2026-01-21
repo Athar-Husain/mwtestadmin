@@ -158,6 +158,9 @@ const AllConnections = () => {
               {p.value}
             </Typography>
             <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', fontWeight: 600 }}>
+              Contact: {p.row.contactNo}
+            </Typography>
+            <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', fontWeight: 600 }}>
               UID: {p.row.uId}
             </Typography>
             <Typography variant="caption" sx={{ color: COLORS.primary, fontSize: '0.7rem', display: 'block' }}>
@@ -167,6 +170,47 @@ const AllConnections = () => {
         </Stack>
       )
     },
+    {
+      field: 'connectionStatus',
+      headerName: 'CONNECTION STATUS',
+      flex: 1,
+      renderCell: (p) => {
+        const status = p.value?.toLowerCase() || 'unknown';
+
+        const isActive = status === 'active';
+        const isSuspended = status === 'suspended';
+        const isCancelled = status === 'cancelled';
+
+        const label = isActive ? 'Active' : isSuspended ? 'Suspended' : isCancelled ? 'Cancelled' : 'Unknown';
+
+        const color = isActive ? COLORS.success : isSuspended ? COLORS.warning : isCancelled ? COLORS.error : COLORS.primary;
+
+        return (
+          <Stack spacing={0.5}>
+            <Chip
+              label={label}
+              size="small"
+              sx={{
+                height: 24,
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                bgcolor: alpha(color, 0.15),
+                color: color,
+                borderRadius: 1.5,
+                textTransform: 'capitalize',
+                letterSpacing: '0.05em',
+                fontFamily: "'Roboto Mono', monospace",
+                pl: 1
+              }}
+            />
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              Due: ₹{p.row.dueAmount?.toLocaleString() || 0}
+            </Typography>
+          </Stack>
+        );
+      }
+    },
+
     {
       field: 'flatRegion',
       headerName: 'REGION & NETWORK',

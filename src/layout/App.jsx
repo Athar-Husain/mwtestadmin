@@ -2,11 +2,7 @@ import React, { useEffect } from 'react';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  getAdminLoginStatus,
-  getAdmin,
-  AdminLogout
-} from '../redux/features/Admin/adminSlice';
+import { getAdminLoginStatus, getAdmin, AdminLogout } from '../redux/features/Admin/adminSlice';
 import { ToastContainer } from 'react-toastify';
 import theme from '../themes';
 import Routes from '../routes/index';
@@ -47,7 +43,7 @@ const App = () => {
     };
 
     initSession();
-  }, [dispatch]);
+  }, [dispatch, Admin]);
 
   return (
     <NavigationScroll>

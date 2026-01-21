@@ -6,9 +6,7 @@ import AuthenticationRoutes from './AuthenticationRoutes';
 export default function ThemeRoutes() {
   const { isLoggedIn } = useSelector((state) => state.admin);
 
-  const routes = isLoggedIn
-    ? [...MainRoutes]
-    : [...AuthenticationRoutes];
+  const routes = isLoggedIn ? [...MainRoutes] : [...AuthenticationRoutes];
 
   // Add fallback route
   routes.push({

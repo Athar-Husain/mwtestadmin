@@ -18,19 +18,6 @@ const AuthenticationRoutes = [
       { path: '', element: <Navigate to="login" replace /> } // Redirect root to login
     ]
   }
-
-  // {
-  //   // path: '/',
-  //   element: <MinimalLayout />,
-  //   children: [
-  //     { path: 'login', element: <AuthLogin /> },
-  //     { path: 'register', element: <AuthRegister /> }
-  //   ]
-  // },
-  // {
-  //   // path: '/',
-  //   element: <Navigate to="/login" replace />
-  // }
 ];
 
 export default AuthenticationRoutes;
